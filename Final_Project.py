@@ -191,17 +191,19 @@ almost_final_benign = complete_benign_dataframe[["label", "hydro_val_change", "m
 almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
                                                          "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                                                          "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
-# Find a way to randomly select equal amounts of samples from each dataframe
-# Then plug into CV?
 
+#print(almost_final_benign.shape, almost_final_pathogenic.shape)
+# Since there are 32,081 benign snSNP's, and 96,367 snSNP's, we will only randomly sample 32,000 from both dataframes to create our final dataset to use
+
+random_benign_frame = almost_final_benign.sample(n = 32000, replace = False, random_state = 1)
+random_pathogenic_frame = almost_final_pathogenic.sample(n = 32000, replace = False, random_state = 1)
+
+concat_dataframe = pd.concat([random_benign_frame, random_pathogenic_frame], ignore_index = True)
+
+final_dataframe = concat_dataframe.sample(frac = 1)
+
+final_dataframe.plot.hist(alpha = 0.2)
 """
-final_dataframe = pd.concat([almost_final_benign, almost_final_pathogenic], ignore_index = True)
-
-# Compare the differences amongst values, rather than just the typical matched values?
-# So new minus original, new left difference minus original left difference, new left difference minus original right difference
-# Sample even amounts of both benign and pathogenic snSNP data for tests (pick randomly amount of rows)?
-
-#final_dataframe.plot.hist(alpha = 0.2)
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)], used to find nan values which messed up logreg
 
 final_y = final_dataframe[["label"]].values.astype(int)
