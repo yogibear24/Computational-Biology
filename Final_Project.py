@@ -191,6 +191,8 @@ almost_final_benign = complete_benign_dataframe[["label", "hydro_val_change", "m
 almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
                                                          "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                                                          "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
+# Find a way to randomly select equal amounts of samples from each dataframe
+# Then plug into CV?
 
 """
 final_dataframe = pd.concat([almost_final_benign, almost_final_pathogenic], ignore_index = True)
