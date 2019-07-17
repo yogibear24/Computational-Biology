@@ -156,26 +156,48 @@ complete_sample_pathogenic_dataframe = generate_ref_neighbors(new_sample_pathoge
 complete_benign_dataframe = generate_ref_neighbors(new_benign_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 complete_pathogenic_dataframe = generate_ref_neighbors(new_pathogenic_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 
-sample_benign_labels = ["0"] * len(complete_sample_benign_dataframe["class"])
-sample_pathogenic_labels = ["1"] * len(complete_sample_pathogenic_dataframe["class"])
-complete_sample_benign_dataframe.insert(0, "label", sample_benign_labels)
-complete_sample_pathogenic_dataframe.insert(0, "label", sample_pathogenic_labels)
-benign_labels = ["0"] * len(complete_benign_dataframe["class"])
-pathogenic_labels = ["1"] * len(complete_pathogenic_dataframe["class"])
-complete_benign_dataframe.insert(0, "label", benign_labels)
-complete_pathogenic_dataframe.insert(0, "label", pathogenic_labels)
+sample_benign_labels = ["0"] * len(complete_sample_benign_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample benign dataframe, specifically 0 = benign, 1 = pathogenic
+sample_pathogenic_labels = ["1"] * len(complete_sample_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
+complete_sample_benign_dataframe.insert(0, "label", sample_benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
+complete_sample_pathogenic_dataframe.insert(0, "label", sample_pathogenic_labels) # Add a column to the dataframe for pathogenic snSNP's which all consist of 1
+benign_labels = ["0"] * len(complete_benign_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the complete benign dataframe, specifically 0 = benign, 1 = pathogenic
+pathogenic_labels = ["1"] * len(complete_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the complete pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
+complete_benign_dataframe.insert(0, "label", benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
+complete_pathogenic_dataframe.insert(0, "label", pathogenic_labels) # Add a column to the dataframe for pathogenic snSNP's which all consist of 1
 
-almost_final_benign = complete_benign_dataframe[["label", "prim_seq_length", "hydro_vals", "mw_vals", "charge_vals", "pi_vals", "pro_pres",
-                                                "l_hydro_vals", "l_mw_vals", "l_charge_vals", "l_pi_vals", "l_pro_pres",
-                                                "r_hydro_vals", "r_mw_vals", "r_charge_vals", "r_pi_vals", "r_pro_pres",
-                                                "o_hydro_vals", "o_mw_vals", "o_charge_vals", "o_pi_vals", "o_pro_pres"]]
-almost_final_pathogenic = complete_pathogenic_dataframe[["label", "prim_seq_length", "hydro_vals", "mw_vals", "charge_vals", "pi_vals", "pro_pres",
-                                                "l_hydro_vals", "l_mw_vals", "l_charge_vals", "l_pi_vals", "l_pro_pres",
-                                                "r_hydro_vals", "r_mw_vals", "r_charge_vals", "r_pi_vals", "r_pro_pres",
-                                                "o_hydro_vals", "o_mw_vals", "o_charge_vals", "o_pi_vals", "o_pro_pres"]]
+def calculate_differences(sample_dataframe):
+    sample_dataframe["hydro_val_change"] = (sample_dataframe["hydro_vals"] - sample_dataframe["o_hydro_vals"]).abs()
+    sample_dataframe["mw_val_change"] = (sample_dataframe["mw_vals"] - sample_dataframe["o_mw_vals"]).abs()
+    sample_dataframe["charge_val_change"] = (sample_dataframe["charge_vals"] - sample_dataframe["o_charge_vals"]).abs()
+    sample_dataframe["pi_val_change"] = (sample_dataframe["pi_vals"] - sample_dataframe["o_pi_vals"]).abs()
+    sample_dataframe["pro_pres_change"] = (sample_dataframe["pro_pres"] - sample_dataframe["o_pro_pres"]).abs()
+    sample_dataframe["l_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["l_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["l_hydro_vals"])).abs()
+    sample_dataframe["l_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["l_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["l_mw_vals"])).abs()
+    sample_dataframe["l_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["l_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["l_charge_vals"])).abs()
+    sample_dataframe["l_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["l_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["l_pi_vals"])).abs()
+    sample_dataframe["r_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["r_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["r_hydro_vals"])).abs()
+    sample_dataframe["r_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["r_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["r_mw_vals"])).abs()
+    sample_dataframe["r_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["r_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["r_charge_vals"])).abs()
+    sample_dataframe["r_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["r_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["r_pi_vals"])).abs()
+    return(sample_dataframe)
+
+benign_calculations = calculate_differences(complete_benign_dataframe)
+pathogenic_calculations = calculate_differences(complete_pathogenic_dataframe)
+
+almost_final_benign = complete_benign_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+                                                 "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
+                                                 "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
+
+almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+                                                         "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
+                                                         "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
+
+"""
 final_dataframe = pd.concat([almost_final_benign, almost_final_pathogenic], ignore_index = True)
 
 # Compare the differences amongst values, rather than just the typical matched values?
+# So new minus original, new left difference minus original left difference, new left difference minus original right difference
+# Sample even amounts of both benign and pathogenic snSNP data for tests (pick randomly amount of rows)?
 
 #final_dataframe.plot.hist(alpha = 0.2)
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)], used to find nan values which messed up logreg
@@ -201,17 +223,17 @@ cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x)
 
 # Leave One Out is too computationally/memory-expensivve for this computer
 """
-loo = LeaveOneOut()
-
-def cv_leave_one_out(final_x):
-    loo_train_index = []
-    loo_test_index = []
-    for train_index, test_index in loo.split(final_x):
-        loo_train_index.append(train_index)
-        loo_test_index.append(test_index)
-    return(loo_train_index, loo_test_index)
-
-cv_loo_train, cv_loo_test = cv_leave_one_out(final_x)
+#loo = LeaveOneOut()
+#
+#def cv_leave_one_out(final_x):
+#    loo_train_index = []
+#    loo_test_index = []
+#    for train_index, test_index in loo.split(final_x):
+#        loo_train_index.append(train_index)
+#        loo_test_index.append(test_index)
+#    return(loo_train_index, loo_test_index)
+#
+#cv_loo_train, cv_loo_test = cv_leave_one_out(final_x)
 """
 
 skf = StratifiedKFold(n_splits = 20)
@@ -297,3 +319,4 @@ chis_sss = len(cv_sss_test[0]) * mcc_sss ** 2
 chis_skf = len(cv_skf_test[0]) * mcc_skf ** 2
 chis_sss = len(cv_sss_test[0]) * mcc_sss_std ** 2
 chis_skf = len(cv_skf_test[0]) * mcc_skf_std ** 2
+"""
