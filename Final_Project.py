@@ -165,53 +165,53 @@ pathogenic_labels = ["1"] * len(complete_pathogenic_dataframe["class"]) # Create
 complete_benign_dataframe.insert(0, "label", benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
 complete_pathogenic_dataframe.insert(0, "label", pathogenic_labels) # Add a column to the dataframe for pathogenic snSNP's which all consist of 1
 
-def calculate_differences(sample_dataframe):
-    sample_dataframe["hydro_val_change"] = (sample_dataframe["hydro_vals"] - sample_dataframe["o_hydro_vals"]).abs()
-    sample_dataframe["mw_val_change"] = (sample_dataframe["mw_vals"] - sample_dataframe["o_mw_vals"]).abs()
-    sample_dataframe["charge_val_change"] = (sample_dataframe["charge_vals"] - sample_dataframe["o_charge_vals"]).abs()
-    sample_dataframe["pi_val_change"] = (sample_dataframe["pi_vals"] - sample_dataframe["o_pi_vals"]).abs()
-    sample_dataframe["pro_pres_change"] = (sample_dataframe["pro_pres"] - sample_dataframe["o_pro_pres"]).abs()
-    sample_dataframe["l_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["l_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["l_hydro_vals"])).abs()
-    sample_dataframe["l_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["l_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["l_mw_vals"])).abs()
-    sample_dataframe["l_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["l_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["l_charge_vals"])).abs()
-    sample_dataframe["l_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["l_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["l_pi_vals"])).abs()
-    sample_dataframe["r_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["r_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["r_hydro_vals"])).abs()
-    sample_dataframe["r_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["r_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["r_mw_vals"])).abs()
-    sample_dataframe["r_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["r_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["r_charge_vals"])).abs()
-    sample_dataframe["r_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["r_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["r_pi_vals"])).abs()
+def calculate_differences(sample_dataframe): # Create data that measures magnitudes of change in specific amino acid quantities between the snSNP substituted amino acid and original amino acid, as well as amongst left and right neighbors
+    sample_dataframe["hydro_val_change"] = (sample_dataframe["hydro_vals"] - sample_dataframe["o_hydro_vals"]).abs() # Calculate the magnitude of the hydrophobicity value change between new and original amino acid at the substituted position
+    sample_dataframe["mw_val_change"] = (sample_dataframe["mw_vals"] - sample_dataframe["o_mw_vals"]).abs() # Calculate the magnitude of the molecular weight change between new and original amino acid at the substituted position
+    sample_dataframe["charge_val_change"] = (sample_dataframe["charge_vals"] - sample_dataframe["o_charge_vals"]).abs() # Calculate the magnitude of the charge value change between new and original amino acid at the substituted position
+    sample_dataframe["pi_val_change"] = (sample_dataframe["pi_vals"] - sample_dataframe["o_pi_vals"]).abs() # Calculate the magnitude of the pI value change between new and original amino acid at the substituted position
+    sample_dataframe["pro_pres_change"] = (sample_dataframe["pro_pres"] - sample_dataframe["o_pro_pres"]).abs() # Calculate the magnitude of the proline presence change between new and original amino acid at the substituted position
+    sample_dataframe["l_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["l_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["l_hydro_vals"])).abs() # Calculate the magnitude of the hydrophobicity value change between left neighbor and new substitute, and left neighbor and original amino acid at the substituted position
+    sample_dataframe["l_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["l_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["l_mw_vals"])).abs() # Calculate the magnitude of the molecular weight change between left neighbor and new substitute, and left neighbor and original amino acid at the substituted position
+    sample_dataframe["l_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["l_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["l_charge_vals"])).abs() # Calculate the magnitude of the charge value change between left neighbor and new substitute, and left neighbor and original amino acid at the substituted position
+    sample_dataframe["l_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["l_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["l_pi_vals"])).abs() # Calculate the magnitude of the pI value change between left neighbor and new substitute, and left neighbor and original amino acid at the substituted position
+    sample_dataframe["r_hydro_val_diff_change"] = ((sample_dataframe["hydro_vals"] - sample_dataframe["r_hydro_vals"]) - (sample_dataframe["o_hydro_vals"] - sample_dataframe["r_hydro_vals"])).abs() # Calculate the magnitude of the hydrophobicity value change between right neighbor and new substitute, and right neighbor and original amino acid at the substituted position
+    sample_dataframe["r_mw_val_diff_change"] = ((sample_dataframe["mw_vals"] - sample_dataframe["r_mw_vals"]) - (sample_dataframe["o_mw_vals"] - sample_dataframe["r_mw_vals"])).abs() # Calculate the magnitude of the molecular weight change between right neighbor and new substitute, and right neighbor and original amino acid at the substituted position
+    sample_dataframe["r_charge_val_diff_change"] = ((sample_dataframe["charge_vals"] - sample_dataframe["r_charge_vals"]) - (sample_dataframe["o_charge_vals"] - sample_dataframe["r_charge_vals"])).abs() # Calculate the magnitude of the charge value change between right neighbor and new substitute, and right neighbor and original amino acid at the substituted position
+    sample_dataframe["r_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["r_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["r_pi_vals"])).abs() # Calculate the magnitude of the pI value change between right neighbor and new substitute, and right neighbor and original amino acid at the substituted position
     return(sample_dataframe)
 
 benign_calculations = calculate_differences(complete_benign_dataframe)
 pathogenic_calculations = calculate_differences(complete_pathogenic_dataframe)
 
-almost_final_benign = complete_benign_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+almost_final_benign = complete_benign_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Create a benign snSNP dataframe that captures the changes created by nsSNP's quantitatively
                                                  "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                                                  "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
 
-almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Create a pathogenic snSNP dataframe that captures the changes created by nsSNP's quantitatively
                                                          "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                                                          "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
 
-#print(almost_final_benign.shape, almost_final_pathogenic.shape)
+print(almost_final_benign.shape, almost_final_pathogenic.shape) # Obtain dimensions of almost_final_benign, almost_final_pathogenic dataframes, to see how many data points we can randomly sample
 # Since there are 32,081 benign snSNP's, and 96,367 snSNP's, we will only randomly sample 32,000 from both dataframes to create our final dataset to use
 
-random_benign_frame = almost_final_benign.sample(n = 32000, replace = False, random_state = 1)
-random_pathogenic_frame = almost_final_pathogenic.sample(n = 32000, replace = False, random_state = 1)
+random_benign_frame = almost_final_benign.sample(n = 32000, replace = False, random_state = 1) # Randomly sample 32,000 benign snSNP data points
+random_pathogenic_frame = almost_final_pathogenic.sample(n = 32000, replace = False, random_state = 1) # Randomly sample 32,000 pathogenic snSNP data points
 
-concat_dataframe = pd.concat([random_benign_frame, random_pathogenic_frame], ignore_index = True)
+concat_dataframe = pd.concat([random_benign_frame, random_pathogenic_frame], ignore_index = True) # Concatenate the two dataframes into a 64,000 point dataframe
 
-final_dataframe = concat_dataframe.sample(frac = 1)
+final_dataframe = concat_dataframe.sample(frac = 1) # Shuffle the points amongst the dataframe randomly to prevent biased training
 
-final_dataframe.plot.hist(alpha = 0.2)
-"""
-#find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)], used to find nan values which messed up logreg
+#find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)] # Used to find any NaN values which mess up logreg
+#print(find_nan_df.shape) # shows that no NaN values are present
 
 final_y = final_dataframe[["label"]].values.astype(int)
-final_x = np.round(final_dataframe[["prim_seq_length", "hydro_vals", "mw_vals", "charge_vals", "pi_vals", "pro_pres",
-                                 "l_hydro_vals", "l_mw_vals", "l_charge_vals", "l_pi_vals", "l_pro_pres",
-                                 "r_hydro_vals", "r_mw_vals", "r_charge_vals", "r_pi_vals", "r_pro_pres",
-                                 "o_hydro_vals", "o_mw_vals", "o_charge_vals", "o_pi_vals", "o_pro_pres"]].values, 2)
+final_x = np.round(final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+                                    "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
+                                    "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]].values, 2)
 final_x = final_x.round(2)
+
+#print(final_y.shape[0], final_x.shape[0], final_x.shape[1]) # Check if dimensions of input matrices and label array match
 
 sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66)
 
@@ -224,21 +224,6 @@ def cv_stratified_shuffle_split(final_y, final_x):
     return(sss_train_index, sss_test_index)
     
 cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x)
-
-# Leave One Out is too computationally/memory-expensivve for this computer
-"""
-#loo = LeaveOneOut()
-#
-#def cv_leave_one_out(final_x):
-#    loo_train_index = []
-#    loo_test_index = []
-#    for train_index, test_index in loo.split(final_x):
-#        loo_train_index.append(train_index)
-#        loo_test_index.append(test_index)
-#    return(loo_train_index, loo_test_index)
-#
-#cv_loo_train, cv_loo_test = cv_leave_one_out(final_x)
-"""
 
 skf = StratifiedKFold(n_splits = 20)
 
@@ -324,3 +309,5 @@ chis_skf = len(cv_skf_test[0]) * mcc_skf ** 2
 chis_sss = len(cv_sss_test[0]) * mcc_sss_std ** 2
 chis_skf = len(cv_skf_test[0]) * mcc_skf_std ** 2
 """
+
+# Future directions: Try out LOOCV, Different Models (Random Forest, etc.)
