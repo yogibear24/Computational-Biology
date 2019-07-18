@@ -192,7 +192,7 @@ almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_cha
                                                          "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                                                          "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]]
 
-print(almost_final_benign.shape, almost_final_pathogenic.shape) # Obtain dimensions of almost_final_benign, almost_final_pathogenic dataframes, to see how many data points we can randomly sample
+#print(almost_final_benign.shape, almost_final_pathogenic.shape) # Obtain dimensions of almost_final_benign, almost_final_pathogenic dataframes, to see how many data points we can randomly sample
 # Since there are 32,081 benign snSNP's, and 96,367 snSNP's, we will only randomly sample 32,000 from both dataframes to create our final dataset to use
 
 random_benign_frame = almost_final_benign.sample(n = 32000, replace = False, random_state = 1) # Randomly sample 32,000 benign snSNP data points
@@ -205,14 +205,14 @@ final_dataframe = concat_dataframe.sample(frac = 1) # Shuffle the points amongst
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)] # Used to find any NaN values which mess up logreg
 #print(find_nan_df.shape) # shows that no NaN values are present
 
-final_y = final_dataframe[["label"]].values.astype(int)
-final_x = np.round(final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
-                                    "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
-                                    "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]].values, 2)
-final_x = final_x.round(2)
+final_y = final_dataframe[["label"]].to_numpy()
+final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+                           "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
+                           "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]].to_numpy().round(2)
 
-#print(final_y.shape[0], final_x.shape[0], final_x.shape[1]) # Check if dimensions of input matrices and label array match
+#print(final_y.shape, final_x.shape) # Check if dimensions of input matrices and label array match
 
+"""
 sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66)
 
 def cv_stratified_shuffle_split(final_y, final_x):
