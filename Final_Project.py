@@ -205,23 +205,24 @@ final_dataframe = concat_dataframe.sample(frac = 1) # Shuffle the points amongst
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)] # Used to find any NaN values which mess up logreg
 #print(find_nan_df.shape) # shows that no NaN values are present
 
-final_y = final_dataframe[["label"]].to_numpy()
-final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change",
+final_y = final_dataframe[["label"]].to_numpy() # Convert the binary benign and pathogenic labels to a numpy array for use in Scikit learn functions
+final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Convert the feature matrix of the datapoints into a numpy array
                            "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                            "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]].to_numpy().round(2)
 
 #print(final_y.shape, final_x.shape) # Check if dimensions of input matrices and label array match
 
-"""
-sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66)
+# Dimensionality Reduction does not need to be done to feed into the model, as this would change the dataset space, which could result in incorrect trends found
 
-def cv_stratified_shuffle_split(final_y, final_x):
-    sss_train_index = []
-    sss_test_index = []
-    for train_index, test_index in sss.split(final_x, final_y):
+sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training
+
+def cv_stratified_shuffle_split(final_y, final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
+    sss_train_index = [] # Initialize an empty list for training set indices
+    sss_test_index = [] # Initialize an empty list for testing set indices
+    for train_index, test_index in sss.split(final_x, final_y): # Using the Scikit-Learn stratified shuffle split function, for each training and testing indices, append their respective lists
         sss_train_index.append(train_index)
         sss_test_index.append(test_index)
-    return(sss_train_index, sss_test_index)
+    return(sss_train_index, sss_test_index) # Return the final stratified shuffle split training and testing indices
     
 cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x)
 
