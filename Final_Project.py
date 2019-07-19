@@ -224,17 +224,17 @@ def cv_stratified_shuffle_split(final_y, final_x): # Create a cross-validation f
         sss_test_index.append(test_index)
     return(sss_train_index, sss_test_index) # Return the final stratified shuffle split training and testing indices
     
-cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x)
+cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data
 
-skf = StratifiedKFold(n_splits = 20)
+skf = StratifiedKFold(n_splits = 20) # Set stratified k fold settings, where there will be 20 specific folds that represent ~50% of the data in each fold
 
-def cv_stratified_k_fold(final_y, final_x):
-    skf_train_index = []
-    skf_test_index = []
-    for train_index, test_index in skf.split(final_x, final_y):
+def cv_stratified_k_fold(final_y, final_x): # Create a cross-validation function with the stratified K-fold split function to generate the train indices and test indices of our dataset to use in our logistic regression model
+    skf_train_index = [] # Initialize an empty list for training set indices
+    skf_test_index = [] # Initialize an empty list for testing set indices
+    for train_index, test_index in skf.split(final_x, final_y): # Using the Scikit-Learn stratified K-fold split function, for each training and testing indices, append their respective lists
         skf_train_index.append(train_index)
         skf_test_index.append(test_index)
-    return(skf_train_index, skf_test_index)
+    return(skf_train_index, skf_test_index) # Return the final stratified shuffle split training and testing indices
 
 cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x)
 
@@ -312,3 +312,4 @@ chis_skf = len(cv_skf_test[0]) * mcc_skf_std ** 2
 """
 
 # Future directions: Try out LOOCV, Different Models (Random Forest, etc.)
+# Rename File Names
