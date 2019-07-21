@@ -11,7 +11,6 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
-from scipy import integrate
 
 # parse dbSNP .txt data (or specific nucleotide position changes) into lists for later usage, specifically gene id, gene abbreviation, gene class, gene residue identification, amino acid change position, protein accession number
 def mutation_data_parser(original_file, new_file):
@@ -238,8 +237,7 @@ def cv_stratified_k_fold(final_y, final_x): # Create a cross-validation function
 
 cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
 
-logreg = LogisticRegression(penalty = "l1", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
-# L1 penalty + Liblinear solver >>> ~ 0.6 accuracy
+logreg = LogisticRegression(penalty = "l2", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
 
 def perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     tn_sss = [] # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
@@ -298,9 +296,51 @@ acc_sss, acc_sss_std, prec_sss, prec_sss_std, sens_sss, sens_sss_std, spec_sss, 
 
 acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, spec_skf_std = calculate_acc_prec_sens_spec(tn_skf, fp_skf, fn_skf, tp_skf)
 
-label_strings = ["LogReg SSS Accuracy", "LogReg SKF Accuracy"]
+# Trying out Random Forest Classifier now NEED TO CHANGE COMMENTS
+
+from sklearn.ensemble import RandomForestClassifier
+
+clf = RandomForestClassifier(n_estimators=100)
+
+def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
+    tn_sss_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
+    fp_sss_rf = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
+    fn_sss_rf = []  # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the logistic regression
+    tp_sss_rf = []  # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the logistic regression
+    tn_skf_rf = []  # Initialize an empty list for the true negative results when performing stratified K-fold split cross-validation with the logistic regression
+    fp_skf_rf = []  # Initialize an empty list for the false positive results when performing stratified K-fold split cross-validation with the logistic regression
+    fn_skf_rf = []  # Initialize an empty list for the false negative results when performing stratified K-fold split cross-validation with the logistic regression
+    tp_skf_rf = []  # Initialize an empty list for the true positive results when performing stratified K-fold split cross-validation with the logistic regression
+    for sss_iter in range(0, len(cv_sss_train)):  # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
+        clf.fit(final_x[cv_sss_train[sss_iter]], final_y[cv_sss_train[sss_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = clf.predict(final_x[cv_sss_test[sss_iter]])  # Predict classification of the test data, for each individual stratified shuffle split index array
+        y_true = final_y[cv_sss_test[sss_iter]]  # Generate the true classification of the test data, for each individual stratified shuffle split index array
+        tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
+        tn_sss_rf.append(tn_rf)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
+        fp_sss_rf.append(fp_rf)  # Update the amount of false positives for each testing iteration, resulting in a list of false positive amounts for each iteration
+        fn_sss_rf.append(fn_rf)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
+        tp_sss_rf.append(tp_rf)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
+    for skf_iter in range(0, len(cv_skf_train)):  # Iterate amongst the total amount of index arrays for the stratified K-fold split list of index arrays
+        clf.fit(final_x[cv_skf_train[skf_iter]], final_y[cv_skf_train[skf_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified K-fold split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = clf.predict(final_x[cv_skf_test[skf_iter]])  # Predict classification of the test data, for each individual stratified K-fold split index array
+        y_true = final_y[cv_skf_test[skf_iter]]  # Generate the true classification of the test data, for each individual stratified K-fold split index array
+        tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
+        tn_skf_rf.append(tn_rf)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
+        fp_skf_rf.append(fp_rf)  # Update the amount of false positives for each testing iteration, resulting in a list of false positive amounts for each iteration
+        fn_skf_rf.append(fn_rf)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
+        tp_skf_rf.append(tp_rf)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
+    return (tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
+
+tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+
+acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
+
+acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
+
+"""
+label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
 plt.errorbar(label_strings, np.array([acc_sss, acc_skf]), np.array([acc_sss_std, acc_skf_std]), linestyle='None', marker='^')
 plt.show()
-
+"""
 # Future directions: Try out LOOCV, Different Models (Random Forest, etc.)
 # Rename File Names
