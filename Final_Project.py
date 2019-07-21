@@ -270,14 +270,18 @@ def perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_
     
 tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 
-tn_sss = np.asarray(tn_sss) # Turn the list of true negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
-fp_sss = np.asarray(fp_sss) # Turn the list of false positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
-fn_sss = np.asarray(fn_sss) # Turn the list of false negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
-tp_sss = np.asarray(tp_sss) # Turn the list of true positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
-tn_skf = np.asarray(tn_skf) # Turn the list of true negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
-fp_skf = np.asarray(fp_skf) # Turn the list of false positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
-fn_skf = np.asarray(fn_skf) # Turn the list of false negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
-tp_skf = np.asarray(tp_skf) # Turn the list of true positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+def convert_conf_matrix_to_numpy(tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf):
+    tn_sss = np.asarray(tn_sss) # Turn the list of true negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+    fp_sss = np.asarray(fp_sss) # Turn the list of false positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+    fn_sss = np.asarray(fn_sss) # Turn the list of false negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+    tp_sss = np.asarray(tp_sss) # Turn the list of true positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+    tn_skf = np.asarray(tn_skf) # Turn the list of true negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+    fp_skf = np.asarray(fp_skf) # Turn the list of false positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+    fn_skf = np.asarray(fn_skf) # Turn the list of false negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+    tp_skf = np.asarray(tp_skf) # Turn the list of true positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+    return(tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf)
+
+tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf = convert_conf_matrix_to_numpy(tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf)
 
 #print(len(tn_sss), len(fp_sss), len(fn_sss), len(tp_sss), len(tn_skf), len(fp_skf), len(fn_skf), len(tp_skf))
 
@@ -333,11 +337,15 @@ def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, 
 
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 
+tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = convert_conf_matrix_to_numpy(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
+
+print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
+
+"""
 acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
-"""
 label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
 plt.errorbar(label_strings, np.array([acc_sss, acc_skf]), np.array([acc_sss_std, acc_skf_std]), linestyle='None', marker='^')
 plt.show()
