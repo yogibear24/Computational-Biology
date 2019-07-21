@@ -304,7 +304,7 @@ acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, 
 
 from sklearn.ensemble import RandomForestClassifier
 
-clf = RandomForestClassifier(n_estimators=100)
+clf = RandomForestClassifier(n_estimators=130)
 
 def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     tn_sss_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
@@ -339,16 +339,17 @@ tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_
 
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = convert_conf_matrix_to_numpy(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
-print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
+#print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
 
-"""
 acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
 label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
-plt.errorbar(label_strings, np.array([acc_sss, acc_skf]), np.array([acc_sss_std, acc_skf_std]), linestyle='None', marker='^')
+plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 plt.show()
+
 """
-# Future directions: Try out LOOCV, Different Models (Random Forest, etc.)
+# Future directions: Better feature selection, different SML models
 # Rename File Names
+"""
