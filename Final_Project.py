@@ -239,6 +239,7 @@ def cv_stratified_k_fold(final_y, final_x): # Create a cross-validation function
 cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
 
 logreg = LogisticRegression(penalty = "l1", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
+# L1 penalty + Liblinear solver >>> ~ 0.6 accuracy
 
 def perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     tn_sss = [] # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
@@ -271,46 +272,35 @@ def perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_
     
 tn_sss, fp_sss, fn_sss, tp_sss, tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 
-"""
-tn_sss = np.asarray(tn_sss)
-fp_sss = np.asarray(fp_sss)
-fn_sss = np.asarray(fn_sss)
-tp_sss = np.asarray(tp_sss)
-tn_skf = np.asarray(tn_skf)
-fp_skf = np.asarray(fp_skf)
-fn_skf = np.asarray(fn_skf)
-tp_skf = np.asarray(tp_skf)
+tn_sss = np.asarray(tn_sss) # Turn the list of true negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+fp_sss = np.asarray(fp_sss) # Turn the list of false positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+fn_sss = np.asarray(fn_sss) # Turn the list of false negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+tp_sss = np.asarray(tp_sss) # Turn the list of true positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
+tn_skf = np.asarray(tn_skf) # Turn the list of true negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+fp_skf = np.asarray(fp_skf) # Turn the list of false positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+fn_skf = np.asarray(fn_skf) # Turn the list of false negative amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
+tp_skf = np.asarray(tp_skf) # Turn the list of true positive amounts for the 20 iterations of stratified K-fold split into a numpy array for faster processing/calculations
 
-q_sss = (np.mean(tp_sss) + np.mean(tn_sss)) / (np.mean(tp_sss) + np.mean(tn_sss) + np.mean(fn_sss) + np.mean(fp_sss))
-q_skf = (np.mean(tp_skf) + np.mean(tn_skf)) / (np.mean(tp_skf) + np.mean(tn_skf) + np.mean(fn_skf) + np.mean(fp_skf))
-q_sss_std = (np.std(tp_sss) + np.std(tn_sss)) / (np.std(tp_sss) + np.std(tn_sss) + np.std(fn_sss) + np.std(fp_sss))
-q_skf_std = (np.std(tp_skf) + np.std(tn_skf)) / (np.std(tp_skf) + np.std(tn_skf) + np.std(fn_skf) + np.std(fp_skf))
-mean_tpr_sss = np.mean(tp_sss) / (np.mean(tp_sss) + np.mean(fn_sss))
-mean_tpr_skf = np.mean(tp_skf) / (np.mean(tp_skf) + np.mean(fn_skf))
-mean_fpr_sss = np.mean(fp_sss) / (np.mean(fp_sss) + np.mean(tn_sss))
-mean_fpr_skf = np.mean(fp_skf) / (np.mean(fp_skf) + np.mean(tn_skf))
-tpr_sss = np.sort(tp_sss / (tp_sss + fn_sss))
-tpr_skf = np.sort(tp_skf / (tp_skf + fn_skf))
-fpr_sss = np.sort(fp_sss / (fp_sss + tn_sss))
-fpr_skf = np.sort(fp_skf / (fp_skf + tn_skf))
-plt.plot(tpr_sss, fpr_sss)
-plt.plot(tpr_skf, fpr_skf)
+#print(len(tn_sss), len(fp_sss), len(fn_sss), len(tp_sss), len(tn_skf), len(fp_skf), len(fn_skf), len(tp_skf))
+
+def calculate_acc_prec_sens_spec(tn_data, fp_data, fn_data, tp_data):
+    acc = np.mean((tp_data + tn_data) / (tp_data + tn_data + fn_data + fp_data)).round(3) # Calculate mean of overall accuracy of model results, true negative + true positive / (true negative + true positive + false negative + false positive)
+    acc_std = np.std((tp_data + tn_data) / (tp_data + tn_data + fn_data + fp_data)).round(3) # Calculate standard deviation of overall accuracy of model results
+    prec = np.mean(tp_data / (tp_data + fp_data)).round(3) # Calculate mean of overall precision of model results, true positive / (true positive + false positive)
+    prec_std = np.std(tp_data / (tp_data + fp_data)).round(3) # Calculate standard deviation of overall precision of model results
+    sens = np.mean(tp_data / (tp_data + fn_data)).round(3) # Calculate mean of overall sensitivity of model results, true positive / (true positive + false negative)
+    sens_std = np.std(tp_data / (tp_data + fn_data)).round(3) # Calculate standard deviation of overall sensitivity of model results
+    spec = np.mean(tn_data / (tn_data + fp_data)).round(3) # Calculate mean of overall specificity of model results, true negative / (true negative + false positive)
+    spec_std = np.std(tn_data / (tn_data + fp_data)).round(3) # Calculate standard deviation of overall specificity of model results
+    return(acc, acc_std, prec, prec_std, sens, sens_std, spec, spec_std)
+
+acc_sss, acc_sss_std, prec_sss, prec_sss_std, sens_sss, sens_sss_std, spec_sss, spec_sss_std = calculate_acc_prec_sens_spec(tn_sss, fp_sss, fn_sss, tp_sss)
+
+acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, spec_skf_std = calculate_acc_prec_sens_spec(tn_skf, fp_skf, fn_skf, tp_skf)
+
+label_strings = ["LogReg SSS Accuracy", "LogReg SKF Accuracy"]
+plt.errorbar(label_strings, np.array([acc_sss, acc_skf]), np.array([acc_sss_std, acc_skf_std]), linestyle='None', marker='^')
 plt.show()
-auc_sss = integrate.simps(tpr_sss, x = fpr_sss)
-auc_skf = integrate.simps(tpr_skf, x = fpr_skf)
-mcc_sss = (np.mean(tp_sss) * np.mean(tn_sss) - np.mean(fp_sss) * np.mean(fn_sss)) / math.sqrt((np.mean(tp_sss) + np.mean(fn_sss)) * (np.mean(tp_sss) + np.mean(fp_sss)) * (np.mean(tn_sss) + np.mean(fn_sss)) * (np.mean(tn_sss) + np.mean(fp_sss)))
-mcc_skf = (np.mean(tp_skf) * np.mean(tn_skf) - np.mean(fp_skf) * np.mean(fn_skf)) / math.sqrt((np.mean(tp_skf) + np.mean(fn_skf)) * (np.mean(tp_skf) + np.mean(fp_skf)) * (np.mean(tn_skf) + np.mean(fn_skf)) * (np.mean(tn_skf) + np.mean(fp_skf)))
-mcc_sss_std = (np.std(tp_sss) * np.std(tn_sss) - np.std(fp_sss) * np.std(fn_sss)) / math.sqrt((np.std(tp_sss) + np.std(fn_sss)) * (np.std(tp_sss) + np.std(fp_sss)) * (np.std(tn_sss) + np.std(fn_sss)) * (np.std(tn_sss) + np.std(fp_sss)))
-mcc_skf_std = (np.std(tp_skf) * np.std(tn_skf) - np.std(fp_skf) * np.std(fn_skf)) / math.sqrt((np.std(tp_skf) + np.std(fn_skf)) * (np.std(tp_skf) + np.std(fp_skf)) * (np.std(tn_skf) + np.std(fn_skf)) * (np.std(tn_skf) + np.std(fp_skf)))
-ber_sss = 0.5 * ((np.mean(fn_sss) / (np.mean(fn_sss) + np.mean(tp_sss))) + (np.mean(fp_sss) / (np.mean(fp_sss) + np.mean(tn_sss))))
-ber_skf = 0.5 * ((np.mean(fn_skf) / (np.mean(fn_skf) + np.mean(tp_skf))) + (np.mean(fp_skf) / (np.mean(fp_skf) + np.mean(tn_skf))))
-ber_sss_std = 0.5 * ((np.std(fn_sss) / (np.std(fn_sss) + np.std(tp_sss))) + (np.std(fp_sss) / (np.std(fp_sss) + np.std(tn_sss))))
-ber_skf_std = 0.5 * ((np.std(fn_skf) / (np.std(fn_skf) + np.std(tp_skf))) + (np.std(fp_skf) / (np.std(fp_skf) + np.std(tn_skf))))
-chis_sss = len(cv_sss_test[0]) * mcc_sss ** 2
-chis_skf = len(cv_skf_test[0]) * mcc_skf ** 2
-chis_sss = len(cv_sss_test[0]) * mcc_sss_std ** 2
-chis_skf = len(cv_skf_test[0]) * mcc_skf_std ** 2
-"""
 
 # Future directions: Try out LOOCV, Different Models (Random Forest, etc.)
 # Rename File Names
