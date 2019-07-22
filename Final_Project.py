@@ -300,11 +300,12 @@ acc_sss, acc_sss_std, prec_sss, prec_sss_std, sens_sss, sens_sss_std, spec_sss, 
 
 acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, spec_skf_std = calculate_acc_prec_sens_spec(tn_skf, fp_skf, fn_skf, tp_skf)
 
+
 # Trying out Random Forest Classifier now NEED TO CHANGE COMMENTS
 
 from sklearn.ensemble import RandomForestClassifier
 
-clf = RandomForestClassifier(n_estimators=130)
+rfclf = RandomForestClassifier(n_estimators=130)
 
 def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     tn_sss_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
@@ -316,8 +317,8 @@ def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, 
     fn_skf_rf = []  # Initialize an empty list for the false negative results when performing stratified K-fold split cross-validation with the logistic regression
     tp_skf_rf = []  # Initialize an empty list for the true positive results when performing stratified K-fold split cross-validation with the logistic regression
     for sss_iter in range(0, len(cv_sss_train)):  # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
-        clf.fit(final_x[cv_sss_train[sss_iter]], final_y[cv_sss_train[sss_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
-        y_pred = clf.predict(final_x[cv_sss_test[sss_iter]])  # Predict classification of the test data, for each individual stratified shuffle split index array
+        rfclf.fit(final_x[cv_sss_train[sss_iter]], final_y[cv_sss_train[sss_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = rfclf.predict(final_x[cv_sss_test[sss_iter]])  # Predict classification of the test data, for each individual stratified shuffle split index array
         y_true = final_y[cv_sss_test[sss_iter]]  # Generate the true classification of the test data, for each individual stratified shuffle split index array
         tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
         tn_sss_rf.append(tn_rf)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
@@ -325,19 +326,18 @@ def perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, 
         fn_sss_rf.append(fn_rf)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
         tp_sss_rf.append(tp_rf)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
     for skf_iter in range(0, len(cv_skf_train)):  # Iterate amongst the total amount of index arrays for the stratified K-fold split list of index arrays
-        clf.fit(final_x[cv_skf_train[skf_iter]], final_y[cv_skf_train[skf_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified K-fold split index array, .ravel() is used to flatten the arrays to be compatible
-        y_pred = clf.predict(final_x[cv_skf_test[skf_iter]])  # Predict classification of the test data, for each individual stratified K-fold split index array
+        rfclf.fit(final_x[cv_skf_train[skf_iter]], final_y[cv_skf_train[skf_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified K-fold split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = rfclf.predict(final_x[cv_skf_test[skf_iter]])  # Predict classification of the test data, for each individual stratified K-fold split index array
         y_true = final_y[cv_skf_test[skf_iter]]  # Generate the true classification of the test data, for each individual stratified K-fold split index array
         tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
         tn_skf_rf.append(tn_rf)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
         fp_skf_rf.append(fp_rf)  # Update the amount of false positives for each testing iteration, resulting in a list of false positive amounts for each iteration
         fn_skf_rf.append(fn_rf)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
         tp_skf_rf.append(tp_rf)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
+    tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = convert_conf_matrix_to_numpy(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
     return (tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
-
-tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = convert_conf_matrix_to_numpy(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf, tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
 #print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
 
@@ -345,11 +345,55 @@ acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
-label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
-plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
+
+# Trying out Suppot Vector Machine now NEED TO CHANGE COMMENTS
+
+from sklearn import svm
+
+svmclf = svm.SVC(gamma='scale')
+
+def perform_svm(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
+    tn_sss_svm = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
+    fp_sss_svm = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
+    fn_sss_svm = []  # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the logistic regression
+    tp_sss_svm = []  # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the logistic regression
+    tn_skf_svm = []  # Initialize an empty list for the true negative results when performing stratified K-fold split cross-validation with the logistic regression
+    fp_skf_svm = []  # Initialize an empty list for the false positive results when performing stratified K-fold split cross-validation with the logistic regression
+    fn_skf_svm = []  # Initialize an empty list for the false negative results when performing stratified K-fold split cross-validation with the logistic regression
+    tp_skf_svm = []  # Initialize an empty list for the true positive results when performing stratified K-fold split cross-validation with the logistic regression
+    for sss_iter in range(0, len(cv_sss_train)):  # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
+        svmclf.fit(final_x[cv_sss_train[sss_iter]], final_y[cv_sss_train[sss_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = svmclf.predict(final_x[cv_sss_test[sss_iter]])  # Predict classification of the test data, for each individual stratified shuffle split index array
+        y_true = final_y[cv_sss_test[sss_iter]]  # Generate the true classification of the test data, for each individual stratified shuffle split index array
+        tn_svm, fp_svm, fn_svm, tp_svm = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
+        tn_sss_svm.append(tn_svm)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
+        fp_sss_svm.append(fp_svm)  # Update the amount of false positives for each testing iteration, resulting in a list of false positive amounts for each iteration
+        fn_sss_svm.append(fn_svm)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
+        tp_sss_svm.append(tp_svm)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
+    for skf_iter in range(0, len(cv_skf_train)):  # Iterate amongst the total amount of index arrays for the stratified K-fold split list of index arrays
+        svmclf.fit(final_x[cv_skf_train[skf_iter]], final_y[cv_skf_train[skf_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified K-fold split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = svmclf.predict(final_x[cv_skf_test[skf_iter]])  # Predict classification of the test data, for each individual stratified K-fold split index array
+        y_true = final_y[cv_skf_test[skf_iter]]  # Generate the true classification of the test data, for each individual stratified K-fold split index array
+        tn_svm, fp_svm, fn_svm, tp_svm = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
+        tn_skf_svm.append(tn_svm)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
+        fp_skf_svm.append(fp_svm)  # Update the amount of false positives for each testing iteration, resulting in a list of false positive amounts for each iteration
+        fn_skf_svm.append(fn_svm)  # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
+        tp_skf_svm.append(tp_svm)  # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
+    tn_sss_svm, fp_sss_svm, fn_sss_svm, tp_sss_svm, tn_skf_svm, fp_skf_svm, fn_skf_svm, tp_skf_svm = convert_conf_matrix_to_numpy(tn_sss_svm, fp_sss_svm, fn_sss_svm, tp_sss_svm, tn_skf_svm, fp_skf_svm, fn_skf_svm, tp_skf_svm)
+    return (tn_sss_svm, fp_sss_svm, fn_sss_svm, tp_sss_svm, tn_skf_svm, fp_skf_svm, fn_skf_svm, tp_skf_svm)
+
+tn_sss_svm, fp_sss_svm, fn_sss_svm, tp_sss_svm, tn_skf_svm, fp_skf_svm, fn_skf_svm, tp_skf_svm = perform_svm(cv_sss_train, cv_sss_test, cv_skf_train, cv_skf_test, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+
+#print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
+
+acc_sss_svm, acc_sss_std_svm, prec_sss_svm, prec_sss_std_svm, sens_sss_svm, sens_sss_std_svm, spec_sss_svm, spec_sss_std_svm = calculate_acc_prec_sens_spec(tn_sss_svm, fp_sss_svm, fn_sss_svm, tp_sss_svm)
+
+acc_skf_svm, acc_skf_std_svm, prec_skf_svm, prec_skf_std_svm, sens_skf_svm, sens_skf_std_svm, spec_skf_svm, spec_skf_std_svm = calculate_acc_prec_sens_spec(tn_skf_svm, fp_skf_svm, fn_skf_svm, tp_skf_svm)
+
+label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "SVM SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy", "SVM SKF Accuracy"]
+plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_sss_svm, acc_skf, acc_skf_rf, acc_skf_svm]), np.array([acc_sss_std, acc_sss_std_rf, acc_sss_std_svm, acc_skf_std, acc_skf_std_rf, acc_skf_std_svm]), linestyle='None', marker='^')
 plt.show()
 
-"""
-# Future directions: Better feature selection, different SML models
+# Future directions: Better feature selection, integrate functions within functions so even less lines of code
 # Rename File Names
 """
