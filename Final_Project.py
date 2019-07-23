@@ -251,11 +251,22 @@ cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x) # Use the cro
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
-test = SelectKBest(score_func = chi2, k = 10)
+test = SelectKBest(score_func = chi2, k = 9)
 fit_sss = test.fit(final_x[cv_sss_train[0]], final_y[cv_sss_train[0]])
 
 X_new = test.transform(final_x[cv_sss_train[0]])
 print(test.get_support(indices = True))
+
+try_chi = chi2(final_x[cv_sss_train[0]], final_y[cv_sss_train[0]])
+print(try_chi)
+
+
+# Get Chi-Squared for every iteration, then automatically pick values where p-value = 0?
+
+# Create empty list of indices
+# Keep looping through increasing k counter, until try_chi[0] contains a value less than 1e+03?
+# Use k value minus one, and also k value minus one results, picking the k most common numbers in the list of indices
+# Use the column indices for the array, then feed into SML algorithm
 
 """
 logreg = LogisticRegression(penalty = "l2", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
