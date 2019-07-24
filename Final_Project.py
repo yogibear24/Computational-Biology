@@ -251,13 +251,15 @@ cv_skf_train, cv_skf_test = cv_stratified_k_fold(almost_final_y, almost_final_x)
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from collections import Counter
+from statistics import mode
 
 def chi2_find_best_feature_matrix(cv_shuffle_indices, almost_final_x, almost_final_y): # Function to find the best indices within a feature matrix after creating cross-validation indices
     cv_shuffle_p_values = [] # Initialize a blank list of p-values, which are usually >= 0 if the chi2 values are largest
-    for iteration in range(0, len(cv_shuffle_indices)): # For each iteration in the cross-validation list of lists of indices, append the blank list with p-value arrays
-        cv_shuffle_p_values.append(chi2(almost_final_x[cv_shuffle_indices[iteration]], almost_final_y[cv_shuffle_indices[iteration]])[1])
-    highest_contributors = sum(map(lambda i: i >= 0, cv_shuffle_p_values)) # Find the total amount of p-values >= 0 amongst all of the elements in the list of p-values
-    best_feature_amount = int(highest_contributors / len(cv_shuffle_indices)) # Divide the total amount of p-values by the total amount of iterations, and convert to integer to get the amount of most relevant features in the matrix
+    list_of_feature_amounts = []
+    for iteration in range(0, len(cv_shuffle_indices)): # For each iteration in the cross-validation list of lists of indices, append the blank list with chi-squared value arrays
+        cv_shuffle_p_values.append(chi2(almost_final_x[cv_shuffle_indices[iteration]], almost_final_y[cv_shuffle_indices[iteration]])[0])
+        list_of_feature_amounts.append(sum(cv_shuffle_p_values[iteration] >= 1e3)) # Find the total amount of chi-squared values >= 1e3 amongst all of the elements in the list of chi-squared values
+    best_feature_amount = mode(list_of_feature_amounts)
     test = SelectKBest(score_func = chi2, k = best_feature_amount) # Plug in the amount of most important features into the SelectKBest function
     list_of_feat_indices = [] # Initialize a blank list for the indices of the most relevant features in the feature matrix
     for iteration in range(0, len(cv_shuffle_indices)): # For each iteration, fit the SelectKBest Chi2 model to the feature matrix, transform, and append the blank list with lists of indices
@@ -268,7 +270,6 @@ def chi2_find_best_feature_matrix(cv_shuffle_indices, almost_final_x, almost_fin
 
 cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, almost_final_x, almost_final_y)
 print(cv_sss_feat_indices)
-
 
 # Create empty lists of indices for each k amount (ex: 1 to 15)
 # Keep looping through increasing k counter, until try_chi[0] contains a value less than 1e+03?
