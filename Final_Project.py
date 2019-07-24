@@ -6,7 +6,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import math as math
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
@@ -218,33 +217,25 @@ final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_chan
 
 #print(final_y.shape, final_x.shape) # Check if dimensions of input matrices and label array match
 
+
 # Dimensionality Reduction does not need to be done to feed into the model, as this would change the dataset space, which could result in incorrect trends found
+
+def cv_shuffle_split(cv_type, final_y, final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
+    shuffle_train_index = [] # Initialize an empty list for training set indices
+    shuffle_test_index = [] # Initialize an empty list for testing set indices
+    for train_index, test_index in cv_type.split(final_x, final_y): # Using the Scikit-Learn stratified shuffle split function, for each training and testing indices, append their respective lists
+        shuffle_train_index.append(train_index)
+        shuffle_test_index.append(test_index)
+    return(shuffle_train_index, shuffle_test_index) # Return the final stratified shuffle split training and testing indices
 
 sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
 
-def cv_stratified_shuffle_split(final_y, final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
-    #print("Creating SSS Data")
-    sss_train_index = [] # Initialize an empty list for training set indices
-    sss_test_index = [] # Initialize an empty list for testing set indices
-    for train_index, test_index in sss.split(final_x, final_y): # Using the Scikit-Learn stratified shuffle split function, for each training and testing indices, append their respective lists
-        sss_train_index.append(train_index)
-        sss_test_index.append(test_index)
-    return(sss_train_index, sss_test_index) # Return the final stratified shuffle split training and testing indices
-    
-cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
+cv_sss_train, cv_sss_test = cv_shuffle_split(sss, final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
 
 skf = StratifiedKFold(n_splits = 20) # Set stratified k fold settings, where there will be 20 specific folds that represent ~50% of the data in each fold, default 20 iterations of testing
 
-def cv_stratified_k_fold(final_y, final_x): # Create a cross-validation function with the stratified K-fold split function to generate the train indices and test indices of our dataset to use in our logistic regression model
-    #print("Creating SKF Data")
-    skf_train_index = [] # Initialize an empty list for training set indices
-    skf_test_index = [] # Initialize an empty list for testing set indices
-    for train_index, test_index in skf.split(final_x, final_y): # Using the Scikit-Learn stratified K-fold split function, for each training and testing indices, append their respective lists
-        skf_train_index.append(train_index)
-        skf_test_index.append(test_index)
-    return(skf_train_index, skf_test_index) # Return the final stratified shuffle split training and testing indices
+cv_skf_train, cv_skf_test = cv_shuffle_split(skf, final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
 
-cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
 
 # Use Feature Selection after creating CV indices
 
@@ -270,22 +261,19 @@ def chi2_find_best_feature_matrix(cv_shuffle_indices, final_x, final_y): # Funct
     return([i[0] for i in Counter(flat_list_of_feat_indices).most_common(best_feature_amount)]) # Return the most common indices, with amount determined by the best_feature_amount
 
 cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, final_x, final_y)
-#print(cv_sss_feat_indices)
+
 cv_skf_feat_indices = chi2_find_best_feature_matrix(cv_skf_train, final_x, final_y)
-
-# Eliminate repetition in functions like for perform_log_reg!
-
-logreg = LogisticRegression(penalty = "l2", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
 
 def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     print("Performing LogReg")
+    logreg = LogisticRegression(penalty = "l2", solver = "liblinear")  # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
     tn_shuffle = [] # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
     fp_shuffle = [] # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
     fn_shuffle = [] # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the logistic regression
     tp_shuffle = [] # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the logistic regression
     for shuffle_iter in range(0, len(cv_shuffle_train)): # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
-        logreg.fit(final_x[cv_shuffle_train[shuffle_iter]][cv_shuffle_features], final_y[cv_shuffle_train[shuffle_iter]].ravel()) # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
-        y_pred = logreg.predict(final_x[cv_shuffle_test[shuffle_iter]][cv_shuffle_features]) # Predict classification of the test data, for each individual stratified shuffle split index array
+        logreg.fit(final_x[cv_shuffle_train[shuffle_iter], cv_shuffle_features], final_y[cv_shuffle_train[shuffle_iter]].ravel()) # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = logreg.predict(final_x[cv_shuffle_test[shuffle_iter], cv_shuffle_features]) # Predict classification of the test data, for each individual stratified shuffle split index array
         y_true = final_y[cv_shuffle_test[shuffle_iter]] # Generate the true classification of the test data, for each individual stratified shuffle split index array
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel() # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
         tn_shuffle.append(tn) # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
@@ -310,8 +298,6 @@ tn_sss, fp_sss, fn_sss, tp_sss = convert_conf_matrix_to_numpy(tn_sss, fp_sss, fn
 
 tn_skf, fp_skf, fn_skf, tp_skf = convert_conf_matrix_to_numpy(tn_skf, fp_skf, fn_skf, tp_skf)
 
-#print(len(tn_sss), len(fp_sss), len(fn_sss), len(tp_sss), len(tn_skf), len(fp_skf), len(fn_skf), len(tp_skf))
-
 def calculate_acc_prec_sens_spec(tn_data, fp_data, fn_data, tp_data):
     print("Calculating Metrics")
     acc = np.mean((tp_data + tn_data) / (tp_data + tn_data + fn_data + fp_data)).round(3) # Calculate mean of overall accuracy of model results, true negative + true positive / (true negative + true positive + false negative + false positive)
@@ -333,17 +319,16 @@ acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, 
 
 from sklearn.ensemble import RandomForestClassifier
 
-rfclf = RandomForestClassifier(n_estimators=130)
-
 def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     print("Performing RF")
+    rfclf = RandomForestClassifier(n_estimators = 100)
     tn_shuffle_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
     fp_shuffle_rf = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
     fn_shuffle_rf = []  # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the logistic regression
     tp_shuffle_rf = []  # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the logistic regression
     for shuffle_iter in range(0, len(cv_shuffle_train)):  # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
-        rfclf.fit(final_x[cv_shuffle_train[shuffle_iter]][cv_shuffle_features], final_y[cv_shuffle_train[shuffle_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
-        y_pred = rfclf.predict(final_x[cv_shuffle_test[shuffle_iter]][cv_shuffle_features])  # Predict classification of the test data, for each individual stratified shuffle split index array
+        rfclf.fit(final_x[cv_shuffle_train[shuffle_iter], cv_shuffle_features], final_y[cv_shuffle_train[shuffle_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        y_pred = rfclf.predict(final_x[cv_shuffle_test[shuffle_iter], cv_shuffle_features])  # Predict classification of the test data, for each individual stratified shuffle split index array
         y_true = final_y[cv_shuffle_test[shuffle_iter]]  # Generate the true classification of the test data, for each individual stratified shuffle split index array
         tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
         tn_shuffle_rf.append(tn_rf)  # Update the amount of true negatives for each testing iteration, resulting in a list of true negative amounts for each iteration
@@ -356,8 +341,6 @@ def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_sss_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 
 tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_skf_train, cv_skf_test, cv_skf_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
-
-#print(len(tn_sss_rf), len(fp_sss_rf), len(fn_sss_rf), len(tp_sss_rf), len(tn_skf_rf), len(fp_skf_rf), len(fn_skf_rf), len(tp_skf_rf))
 
 acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
 
