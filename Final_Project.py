@@ -266,7 +266,8 @@ def chi2_find_best_feature_matrix(cv_shuffle_indices, almost_final_x, almost_fin
         fit_sss = test.fit(almost_final_x[cv_shuffle_indices[iteration]], almost_final_y[cv_shuffle_indices[iteration]])
         X_new = test.transform(almost_final_x[cv_shuffle_indices[iteration]])
         list_of_feat_indices.append(test.get_support(indices = True))
-    return([i[0] for i in Counter(list_of_feat_indices).most_common(best_feature_amount)]) # Return the most common indices, with amount determined by the best_feature_amount
+    flat_list_of_feat_indices = np.concatenate(list_of_feat_indices).ravel()
+    return([i[0] for i in Counter(flat_list_of_feat_indices).most_common(best_feature_amount)]) # Return the most common indices, with amount determined by the best_feature_amount
 
 cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, almost_final_x, almost_final_y)
 print(cv_sss_feat_indices)
