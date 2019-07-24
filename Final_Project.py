@@ -211,8 +211,8 @@ final_dataframe = concat_dataframe.sample(frac = 1) # Shuffle the points amongst
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)] # Used to find any NaN values which mess up logreg
 #print(find_nan_df.shape) # shows that no NaN values are present
 
-final_y = final_dataframe[["label"]].to_numpy() # Convert the binary benign and pathogenic labels to a numpy array for use in Scikit learn functions
-final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Convert the feature matrix of the datapoints into a numpy array
+almost_final_y = final_dataframe[["label"]].to_numpy() # Convert the binary benign and pathogenic labels to a numpy array for use in Scikit learn functions
+almost_final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Convert the feature matrix of the datapoints into a numpy array
                            "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
                            "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres"]].to_numpy().round(2)
 
@@ -222,51 +222,60 @@ final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_chan
 
 sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
 
-def cv_stratified_shuffle_split(final_y, final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
+def cv_stratified_shuffle_split(almost_final_y, almost_final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
     #print("Creating SSS Data")
     sss_train_index = [] # Initialize an empty list for training set indices
     sss_test_index = [] # Initialize an empty list for testing set indices
-    for train_index, test_index in sss.split(final_x, final_y): # Using the Scikit-Learn stratified shuffle split function, for each training and testing indices, append their respective lists
+    for train_index, test_index in sss.split(almost_final_x, almost_final_y): # Using the Scikit-Learn stratified shuffle split function, for each training and testing indices, append their respective lists
         sss_train_index.append(train_index)
         sss_test_index.append(test_index)
     return(sss_train_index, sss_test_index) # Return the final stratified shuffle split training and testing indices
     
-cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
+cv_sss_train, cv_sss_test = cv_stratified_shuffle_split(almost_final_y, almost_final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
 
 skf = StratifiedKFold(n_splits = 20) # Set stratified k fold settings, where there will be 20 specific folds that represent ~50% of the data in each fold, default 20 iterations of testing
 
-def cv_stratified_k_fold(final_y, final_x): # Create a cross-validation function with the stratified K-fold split function to generate the train indices and test indices of our dataset to use in our logistic regression model
+def cv_stratified_k_fold(almost_final_y, almost_final_x): # Create a cross-validation function with the stratified K-fold split function to generate the train indices and test indices of our dataset to use in our logistic regression model
     #print("Creating SKF Data")
     skf_train_index = [] # Initialize an empty list for training set indices
     skf_test_index = [] # Initialize an empty list for testing set indices
-    for train_index, test_index in skf.split(final_x, final_y): # Using the Scikit-Learn stratified K-fold split function, for each training and testing indices, append their respective lists
+    for train_index, test_index in skf.split(almost_final_x, almost_final_y): # Using the Scikit-Learn stratified K-fold split function, for each training and testing indices, append their respective lists
         skf_train_index.append(train_index)
         skf_test_index.append(test_index)
     return(skf_train_index, skf_test_index) # Return the final stratified shuffle split training and testing indices
 
-cv_skf_train, cv_skf_test = cv_stratified_k_fold(final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
+cv_skf_train, cv_skf_test = cv_stratified_k_fold(almost_final_y, almost_final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
 
 # Use Feature Selection after creating CV indices
 
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+from collections import Counter
 
-test = SelectKBest(score_func = chi2, k = 9)
-fit_sss = test.fit(final_x[cv_sss_train[0]], final_y[cv_sss_train[0]])
+def chi2_find_best_feature_matrix(cv_shuffle_indices, almost_final_x, almost_final_y): # Function to find the best indices within a feature matrix after creating cross-validation indices
+    cv_shuffle_p_values = [] # Initialize a blank list of p-values, which are usually >= 0 if the chi2 values are largest
+    for iteration in range(0, len(cv_shuffle_indices)): # For each iteration in the cross-validation list of lists of indices, append the blank list with p-value arrays
+        cv_shuffle_p_values.append(chi2(almost_final_x[cv_shuffle_indices[iteration]], almost_final_y[cv_shuffle_indices[iteration]])[1])
+    highest_contributors = sum(map(lambda i: i >= 0, cv_shuffle_p_values)) # Find the total amount of p-values >= 0 amongst all of the elements in the list of p-values
+    best_feature_amount = int(highest_contributors / len(cv_shuffle_indices)) # Divide the total amount of p-values by the total amount of iterations, and convert to integer to get the amount of most relevant features in the matrix
+    test = SelectKBest(score_func = chi2, k = best_feature_amount) # Plug in the amount of most important features into the SelectKBest function
+    list_of_feat_indices = [] # Initialize a blank list for the indices of the most relevant features in the feature matrix
+    for iteration in range(0, len(cv_shuffle_indices)): # For each iteration, fit the SelectKBest Chi2 model to the feature matrix, transform, and append the blank list with lists of indices
+        fit_sss = test.fit(almost_final_x[cv_shuffle_indices[iteration]], almost_final_y[cv_shuffle_indices[iteration]])
+        X_new = test.transform(almost_final_x[cv_shuffle_indices[iteration]])
+        list_of_feat_indices.append(test.get_support(indices = True))
+    return([i[0] for i in Counter(list_of_feat_indices).most_common(best_feature_amount)]) # Return the most common indices, with amount determined by the best_feature_amount
 
-X_new = test.transform(final_x[cv_sss_train[0]])
-print(test.get_support(indices = True))
-
-try_chi = chi2(final_x[cv_sss_train[0]], final_y[cv_sss_train[0]])
-print(try_chi)
+cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, almost_final_x, almost_final_y)
+print(cv_sss_feat_indices)
 
 
-# Get Chi-Squared for every iteration, then automatically pick values where p-value = 0?
-
-# Create empty list of indices
+# Create empty lists of indices for each k amount (ex: 1 to 15)
 # Keep looping through increasing k counter, until try_chi[0] contains a value less than 1e+03?
 # Use k value minus one, and also k value minus one results, picking the k most common numbers in the list of indices
 # Use the column indices for the array, then feed into SML algorithm
+
+# Eliminate repetition in functions like for perform_log_reg!
 
 """
 logreg = LogisticRegression(penalty = "l2", solver = "liblinear") # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
