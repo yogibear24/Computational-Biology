@@ -352,5 +352,5 @@ label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy"
 plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 plt.show()
 
-# Future directions: Better feature selection, integrate functions within functions so even less lines of code
+# Future directions: More feature selection methods, integrate functions within functions so even less lines of code, comment every line, how to increase accuracy?
 # Rename File Names
