@@ -200,8 +200,10 @@ almost_final_pathogenic = complete_pathogenic_dataframe[["label", "hydro_val_cha
 #print(almost_final_benign.shape, almost_final_pathogenic.shape) # Obtain dimensions of almost_final_benign, almost_final_pathogenic dataframes, to see how many data points we can randomly sample
 # Since there are 32,081 benign snSNP's, and 96,367 snSNP's, we will only randomly sample 32,000 from both dataframes to create our final dataset to use
 
-random_benign_frame = almost_final_benign.sample(n = 32000, replace = False, random_state = 1) # Randomly sample 32,000 benign snSNP data points
-random_pathogenic_frame = almost_final_pathogenic.sample(n = 32000, replace = False, random_state = 1) # Randomly sample 32,000 pathogenic snSNP data points
+print(almost_final_benign.shape, almost_final_pathogenic.shape)
+
+random_benign_frame = almost_final_benign.sample(n = 32080, replace = False, random_state = 1) # Randomly sample 32,000 benign snSNP data points
+random_pathogenic_frame = almost_final_pathogenic.sample(n = 96360, replace = False, random_state = 1) # Randomly sample 32,000 pathogenic snSNP data points
 
 concat_dataframe = pd.concat([random_benign_frame, random_pathogenic_frame], ignore_index = True) # Concatenate the two dataframes into a 64,000 point dataframe
 
@@ -228,7 +230,7 @@ def cv_shuffle_split(cv_type, final_y, final_x): # Create a cross-validation fun
         shuffle_test_index.append(test_index)
     return(shuffle_train_index, shuffle_test_index) # Return the final stratified shuffle split training and testing indices
 
-sss = StratifiedShuffleSplit(test_size = 0.34, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
+sss = StratifiedShuffleSplit(test_size = 0.33, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
 
 cv_sss_train, cv_sss_test = cv_shuffle_split(sss, final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
 
@@ -263,6 +265,10 @@ def chi2_find_best_feature_matrix(cv_shuffle_indices, final_x, final_y): # Funct
 cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, final_x, final_y)
 
 cv_skf_feat_indices = chi2_find_best_feature_matrix(cv_skf_train, final_x, final_y)
+
+cv_sss_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14]
+
+cv_skf_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14]
 
 def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     print("Performing LogReg")
