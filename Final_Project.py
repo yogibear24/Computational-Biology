@@ -116,7 +116,7 @@ def dropping_rows(sample_dataframe): # Retain desired based on different conditi
     filtered_data = filtered_data[filtered_data["class"].astype(str) != "synonymous-codon"] # Retain SNP rows without a synonymous codon (resulting in no effect)
     filtered_data = filtered_data[filtered_data["class"].astype(str) != "stop-gained"] # Retain SNP rows without stop-gained and stop-lost (which prevent comparison to neighboring residues for the substituted one for an SNP, a key part of this investigation)
     filtered_data = filtered_data[filtered_data["class"].astype(str) != "stop-lost"]
-    filtered_data = filtered_data[filtered_data["position"].astype(int) >= 2]  # Retain SNP rows where the SNP substitution is not at the first amino acid in the primary sequence (so there are both left and right neighbors to be investigated)
+    filtered_data = filtered_data[filtered_data["position"].astype(int) >= 2]  # Retain SNP rows where the SNP substitution is not at the first amino acid in the primary sequence (so there are both left and right neighbors to be investigated), and >= to 5 to account for alpha helix secondary bonding between resideus 3-4 amino acids away
     filtered_data["prim_seq_length"] = filtered_data["prim_seq"].apply(lambda x: len(x)) # Measure and create a oolumn in the dataframe that measures the length of the original protein's primary sequence that an SNP occurs in
     filtered_data = filtered_data[(filtered_data["position"].astype(int) + 1) <= filtered_data["prim_seq_length"]] # Retain SNP rows where the substitution is at least one less than the length of the primary sequence length (so there are both left and right neighbor residues)
     return(filtered_data)
@@ -219,7 +219,7 @@ final_x = final_dataframe[["hydro_val_change", "mw_val_change", "charge_val_chan
 
 #print(final_y.shape, final_x.shape) # Check if dimensions of input matrices and label array match
 
-
+"""
 # Dimensionality Reduction does not need to be done to feed into the model, as this would change the dataset space, which could result in incorrect trends found
 
 def cv_shuffle_split(cv_type, final_y, final_x): # Create a cross-validation function with the stratified shuffle split function to generate the train indices and test indices of our dataset to use in our logistic regression model
@@ -230,7 +230,7 @@ def cv_shuffle_split(cv_type, final_y, final_x): # Create a cross-validation fun
         shuffle_test_index.append(test_index)
     return(shuffle_train_index, shuffle_test_index) # Return the final stratified shuffle split training and testing indices
 
-sss = StratifiedShuffleSplit(test_size = 0.33, train_size = 0.66) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
+sss = StratifiedShuffleSplit(test_size = 0.335, train_size = 0.665) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
 
 cv_sss_train, cv_sss_test = cv_shuffle_split(sss, final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
 
@@ -266,9 +266,11 @@ cv_sss_feat_indices = chi2_find_best_feature_matrix(cv_sss_train, final_x, final
 
 cv_skf_feat_indices = chi2_find_best_feature_matrix(cv_skf_train, final_x, final_y)
 
-cv_sss_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14]
+cv_sss_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14] # Model performs better without feature selction so will simply just implement this
 
-cv_skf_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14]
+cv_skf_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14] # Model performs better without feature selction so will simply just implement this
+
+print(cv_sss_feat_indices)
 
 def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     print("Performing LogReg")
@@ -352,11 +354,14 @@ acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
-# Tried out SVM, takes too long
+# Cannot do SVM since too many data points
 
 label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
 plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 plt.show()
 
-# Future directions: More feature selection methods, integrate functions within functions so even less lines of code, comment every line, how to increase accuracy?
+# Future directions: More feature selection methods, Generate more features, integrate functions within functions so even less lines of code, comment every line, how to increase accuracy?
+# Look into how to predict secondary structure interactions/molecular dynamics
 # Rename File Names
+# So far: ~77% accuracy with RF, 70% accuracy with LogReg
+"""
