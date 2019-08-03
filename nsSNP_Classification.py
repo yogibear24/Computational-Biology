@@ -253,6 +253,7 @@ cv_skf_train, cv_skf_test = cv_shuffle_split(skf, final_y, final_x) # Use the cr
 
 """
 # Use Feature Selection after creating CV indices
+# The Feature Selection method used is a filter-type, which utilizes the Chi-Squared metric for the dataset
 
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -369,36 +370,33 @@ acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_
 # Cannot do SVM since too many data points
 
 plt.subplot(221)
-acc_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
+labels = ["Logistic\nRegression\nSratified\nShuffle Split", "Random Forest\nSratified\nShuffle Split", "Logistic\nRegression\nSratified\nK=Fold", "Random Forest\nSratified\nK-Fold"]
 plt.tight_layout(pad = 0.4)
+plt.title("Accuracy of Logistic Regression\nand Random Forest Models")
 plt.ylabel("Model Accuracy")
 plt.xlabel("Model Cross-Validation Type")
-plt.tick_params(axis = 'x', labelsize = 8, rotation = -45)
-plt.errorbar(acc_labels, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
+plt.errorbar(labels, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(222)
-prec_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
 plt.tight_layout(pad = 0.4)
+plt.title("Precision of Logistic Regression\nand Random Forest Models")
 plt.ylabel("Model Precision")
 plt.xlabel("Model Cross-Validation Type")
-plt.tick_params(axis = 'x', labelsize = 8, rotation = -45)
-plt.errorbar(prec_labels, np.array([prec_sss, prec_sss_rf, prec_skf, prec_skf_rf]), np.array([prec_sss_std, prec_sss_std_rf, prec_skf_std, prec_skf_std_rf]), linestyle='None', marker='^')
+plt.errorbar(labels, np.array([prec_sss, prec_sss_rf, prec_skf, prec_skf_rf]), np.array([prec_sss_std, prec_sss_std_rf, prec_skf_std, prec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(223)
-sens_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
 plt.tight_layout(pad = 0.4)
+plt.title("Sensitivity of Logistic Regression\nand Random Forest Models")
 plt.ylabel("Sensitivity")
 plt.xlabel("Model Cross-Validation Type")
-plt.tick_params(axis = 'x', labelsize = 8, rotation = -45)
-plt.errorbar(sens_labels, np.array([sens_sss, sens_sss_rf, sens_skf, sens_skf_rf]), np.array([sens_sss_std, sens_sss_std_rf, sens_skf_std, sens_skf_std_rf]), linestyle='None', marker='^')
+plt.errorbar(labels, np.array([sens_sss, sens_sss_rf, sens_skf, sens_skf_rf]), np.array([sens_sss_std, sens_sss_std_rf, sens_skf_std, sens_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(224)
-spec_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
 plt.tight_layout(pad = 0.4)
+plt.title("Specificity of Logistic Regression\nand Random Forest Models")
 plt.ylabel("Specificity")
 plt.xlabel("Model Cross-Validation Type")
-plt.tick_params(axis = 'x', labelsize = 8, rotation = -45)
-plt.errorbar(spec_labels, np.array([spec_sss, spec_sss_rf, spec_skf, spec_skf_rf]), np.array([spec_sss_std, spec_sss_std_rf, spec_skf_std, spec_skf_std_rf]), linestyle='None', marker='^')
+plt.errorbar(labels, np.array([spec_sss, spec_sss_rf, spec_skf, spec_skf_rf]), np.array([spec_sss_std, spec_sss_std_rf, spec_skf_std, spec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.show()
 
