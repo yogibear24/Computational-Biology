@@ -10,6 +10,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
+from textwrap import wrap
 
 # parse dbSNP .txt data (or specific nucleotide position changes) into lists for later usage, specifically gene id, gene abbreviation, gene class, gene residue identification, amino acid change position, protein accession number
 def mutation_data_parser(original_file, new_file):
@@ -367,8 +368,34 @@ acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_
 
 # Cannot do SVM since too many data points
 
-label_strings = ["LogReg SSS Accuracy", "RF SSS Accuracy", "LogReg SKF Accuracy", "RF SKF Accuracy"]
-plt.errorbar(label_strings, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
+plt.subplot(221)
+acc_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
+plt.ylabel("Model Accuracy")
+plt.xlabel("Model Cross-Validation")
+plt.tick_params(axis = 'x', labelsize = 6, rotation = -45)
+plt.errorbar(acc_labels, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
+
+plt.subplot(222)
+prec_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
+plt.ylabel("Model Precision")
+plt.xlabel("Model Cross-Validation")
+plt.tick_params(axis = 'x', labelsize = 6, rotation = -45)
+plt.errorbar(prec_labels, np.array([prec_sss, prec_sss_rf, prec_skf, prec_skf_rf]), np.array([prec_sss_std, prec_sss_std_rf, prec_skf_std, prec_skf_std_rf]), linestyle='None', marker='^')
+
+plt.subplot(223)
+sens_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
+plt.ylabel("Sensitivity")
+plt.xlabel("Model Cross-Validation")
+plt.tick_params(axis = 'x', labelsize = 6, rotation = -45)
+plt.errorbar(sens_labels, np.array([sens_sss, sens_sss_rf, sens_skf, sens_skf_rf]), np.array([sens_sss_std, sens_sss_std_rf, sens_skf_std, sens_skf_std_rf]), linestyle='None', marker='^')
+
+plt.subplot(224)
+spec_labels = ["LogReg SSS", "RF SSS", "LogReg SKF", "RF SKF"]
+plt.ylabel("Specificity")
+plt.xlabel("Model Cross-Validation")
+plt.tick_params(axis = 'x', labelsize = 6, rotation = -45)
+plt.errorbar(spec_labels, np.array([spec_sss, spec_sss_rf, spec_skf, spec_skf_rf]), np.array([spec_sss_std, spec_sss_std_rf, spec_skf_std, spec_skf_std_rf]), linestyle='None', marker='^')
+
 plt.show()
 
 # Future directions: More feature selection methods, Generate more features, integrate functions within functions so even less lines of code, comment every line, how to increase accuracy?
