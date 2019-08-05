@@ -372,37 +372,44 @@ acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_
 plt.subplot(221)
 labels = ["LR Sratified\nShuffle Split", "RF Sratified\nShuffle Split", "LR Sratified\nK-Fold", "RF Sratified\nK-Fold"]
 plt.tight_layout(pad = 0.4)
-plt.title("Accuracy of Logistic Regression(LR)\nand Random Forest(RF) Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45)
+plt.title("Accuracy of Logistic Regression (LR)\nand Random Forest(RF) Models", fontsize = 10)
+plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
+plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
 plt.ylabel("Model Accuracy", fontsize = 8)
 plt.xlabel("Model Cross-Validation Type", fontsize = 8)
 plt.errorbar(labels, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(222)
 plt.tight_layout(pad = 0.4)
-plt.title("Precision of Logistic Regression(LR)\nand Random Forest Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45)
+plt.title("Precision of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
+plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
+plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
 plt.ylabel("Model Precision", fontsize = 8)
 plt.xlabel("Model Cross-Validation Type", fontsize = 8)
 plt.errorbar(labels, np.array([prec_sss, prec_sss_rf, prec_skf, prec_skf_rf]), np.array([prec_sss_std, prec_sss_std_rf, prec_skf_std, prec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(223)
 plt.tight_layout(pad = 0.4)
-plt.title("Sensitivity of Logistic Regression(LR)\nand Random Forest Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45)
+plt.title("Sensitivity of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
+plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
+plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
 plt.ylabel("Sensitivity", fontsize = 8)
 plt.xlabel("Model Cross-Validation Type", fontsize = 8)
 plt.errorbar(labels, np.array([sens_sss, sens_sss_rf, sens_skf, sens_skf_rf]), np.array([sens_sss_std, sens_sss_std_rf, sens_skf_std, sens_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(224)
 plt.tight_layout(pad = 0.4)
-plt.title("Specificity of Logistic Regression(LR)\nand Random Forest Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45)
+plt.title("Specificity of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
+plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
+plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
 plt.ylabel("Specificity", fontsize = 8)
 plt.xlabel("Model Cross-Validation Type", fontsize = 8)
 plt.errorbar(labels, np.array([spec_sss, spec_sss_rf, spec_skf, spec_skf_rf]), np.array([spec_sss_std, spec_sss_std_rf, spec_skf_std, spec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.show()
+
+# Make the y-axis ticks from 0 - 1.0, intervals of 0.5?
+
 
 # Future directions: More feature selection methods, Generate more features, integrate functions within functions so even less lines of code, comment every line, how to increase accuracy?
 # Look into how to predict secondary structure interactions/molecular dynamics
