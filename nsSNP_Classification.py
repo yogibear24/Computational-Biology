@@ -42,7 +42,8 @@ sample_benign_snp_id, sample_benign_gene_abbrev, sample_benign_fxn_class, sample
 sample_pathogenic_snp_id, sample_pathogenic_gene_abbrev, sample_pathogenic_fxn_class, sample_pathogenic_residue, sample_pathogenic_aa_position, sample_pathogenic_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_pathogenic.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_pathogenic_new.txt")
 benign_snp_id, benign_gene_abbrev, benign_fxn_class, benign_residue, benign_aa_position, benign_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/Benign_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/New_Benign_nsSNP_Protein_Available.txt")
 pathogenic_snp_id, pathogenic_gene_abbrev, pathogenic_fxn_class, pathogenic_residue, pathogenic_aa_position, pathogenic_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/Pathogenic_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/New_Pathogenic_nsSNP_Protein_Available.txt")
-    
+print("Done Parsing nsSNP Data")
+
 def appending_snp_id(snp_id, gene_abbrev): # Creating a new appended SNP id list, where the format is [SNP id 0, gene abbreviation 0, SNP id 1, gene abbreviation 1, ...]
     #print("Appending SNP ID Data")
     new_snp_id = [] # Generate empty new SNP id type list
@@ -60,6 +61,7 @@ new_sample_benign_id = appending_snp_id(sample_benign_snp_id, sample_benign_gene
 new_sample_pathogenic_id = appending_snp_id(sample_pathogenic_snp_id, sample_pathogenic_gene_abbrev)
 new_pathogenic_id = appending_snp_id(pathogenic_snp_id, pathogenic_gene_abbrev)
 new_benign_id = appending_snp_id(benign_snp_id, benign_gene_abbrev)
+print("Done Appending SNP ID")
 
 amino_acids = ["G","A","V","L","I","P","F","Y","W","S","T","N","Q","C","M","D","E","H","K","R"] # Generate list of twenty possible amino acids in protein sequences where the SNP's occur
 amino_acid_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] # Generate numeric label for the twenty possible amino acids in protein sequences where the SNP's occur, to also do a Bag-of-Words approach
@@ -74,6 +76,7 @@ mm_dict = dict(zip(amino_acids, molec_mass_values)) # Create a dictionary where 
 cv_dict = dict(zip(amino_acids, charge_values)) # Create a dictionary where the respective amino acids are assigned their respective charge values
 pi_dict = dict(zip(amino_acids, pI_values)) # Create a dictionary where the respective amino acids are assigned their respective pI values
 pro_dict = dict(zip(amino_acids, proline_present)) # Create a dictionary where the respective amino acids are assigned their respective proline presence
+print("Done Creating Dictionaries")
 
 def parse_all_proteins(): # This function utilizes fasta data with protein accession numbers, and creates a dictionary where protein accession number(ex: "NP_778203.1") is the key and the value of the key is the protein sequence string
     #print("Parsing Protein Data")
@@ -95,6 +98,7 @@ def parse_all_proteins(): # This function utilizes fasta data with protein acces
     return(sequences)
 
 sequence_dict = parse_all_proteins() # Create a dictionary of all the sequences from the All_Proteins.fasta file
+print("Done Parsing Protein FASTA Data")
 
 def create_dataframe(sample_snp_id, sample_protein_acc, sample_gene_abbrev, sample_fxn_class, sample_residue, sample_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict): # Create a dataframe to organize all SNP entries/data/features
     #print("Creating Dataframes")
@@ -113,6 +117,7 @@ sample_benign_dataframe = create_dataframe(new_sample_benign_id, sample_benign_p
 sample_pathogenic_dataframe = create_dataframe(new_sample_pathogenic_id, sample_pathogenic_protein_acc, sample_pathogenic_gene_abbrev, sample_pathogenic_fxn_class, sample_pathogenic_residue, sample_pathogenic_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
 benign_dataframe = create_dataframe(new_benign_id, benign_protein_acc, benign_gene_abbrev, benign_fxn_class, benign_residue, benign_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
 pathogenic_dataframe = create_dataframe(new_pathogenic_id, pathogenic_protein_acc, pathogenic_gene_abbrev, pathogenic_fxn_class, pathogenic_residue, pathogenic_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
+print("Done Initializing Dataframes")
 
 def dropping_rows(sample_dataframe): # Retain desired based on different conditions
     #print("Dropping Rows")
@@ -129,8 +134,7 @@ new_sample_benign_dataframe = dropping_rows(sample_benign_dataframe) # Apply dro
 new_sample_pathogenic_dataframe = dropping_rows(sample_pathogenic_dataframe) # Apply dropping row function to sample pathogenic snSNP data (testing out function before applying to mass data)
 new_benign_dataframe = dropping_rows(benign_dataframe) # Apply dropping row function to full benign snSNP dataset
 new_pathogenic_dataframe = dropping_rows(pathogenic_dataframe) # Apply dropping row function to full pathogenic snSNP dataset
-
-print(new_sample_benign_dataframe)
+print("Done Cleaning Data")
 
 def generate_ref_neighbors(sample_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict): # Generate left and right neighboring amino acid data for the snSNP location in respective amino acid primary sequences
     #print("Generating Neighbors")
@@ -168,6 +172,7 @@ complete_sample_benign_dataframe = generate_ref_neighbors(new_sample_benign_data
 complete_sample_pathogenic_dataframe = generate_ref_neighbors(new_sample_pathogenic_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 complete_benign_dataframe = generate_ref_neighbors(new_benign_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 complete_pathogenic_dataframe = generate_ref_neighbors(new_pathogenic_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
+print("Done Generating Amino Acid Neighbor Data")
 
 sample_benign_labels = ["0"] * len(complete_sample_benign_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample benign dataframe, specifically 0 = benign, 1 = pathogenic
 sample_pathogenic_labels = ["1"] * len(complete_sample_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
@@ -177,6 +182,7 @@ benign_labels = ["0"] * len(complete_benign_dataframe["class"]) # Create binary 
 pathogenic_labels = ["1"] * len(complete_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the complete pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
 complete_benign_dataframe.insert(0, "label", benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
 complete_pathogenic_dataframe.insert(0, "label", pathogenic_labels) # Add a column to the dataframe for pathogenic snSNP's which all consist of 1
+print("Done Generating Labels")
 
 def calculate_differences(sample_dataframe): # Create data that measures magnitudes of change in specific amino acid quantities between the snSNP substituted amino acid and original amino acid, as well as amongst left and right neighbors
     #print("Calculating Differences")
@@ -197,6 +203,7 @@ def calculate_differences(sample_dataframe): # Create data that measures magnitu
 
 benign_calculations = calculate_differences(complete_benign_dataframe)
 pathogenic_calculations = calculate_differences(complete_pathogenic_dataframe)
+print("Done Calculating Values")
 
 almost_final_benign = complete_benign_dataframe[["label", "aa_vals", "hydro_val_change", "mw_val_change", "charge_val_change", "pi_val_change", "pro_pres_change", # Create a benign snSNP dataframe that captures the changes created by nsSNP's quantitatively
                                                  "l_aa_vals", "l_hydro_val_diff_change", "l_mw_val_diff_change", "l_charge_val_diff_change", "l_pi_val_diff_change", "l_pro_pres",
@@ -211,14 +218,37 @@ almost_final_pathogenic = complete_pathogenic_dataframe[["label", "aa_vals", "hy
 #print(almost_final_benign.shape, almost_final_pathogenic.shape) # Obtain dimensions of almost_final_benign, almost_final_pathogenic dataframes, to see how many data points we can randomly sample
 # Since there are 32,081 benign snSNP's, and 96,367 snSNP's, we will only randomly sample 32,000 from both dataframes to create our final dataset to use
 
+print("Done Generating Full Dataframes")
 print(almost_final_benign.shape, almost_final_pathogenic.shape)
 
 random_benign_frame = almost_final_benign.sample(n = 32080, replace = False, random_state = 1) # Randomly sample 32,000 benign snSNP data points
 random_pathogenic_frame = almost_final_pathogenic.sample(n = 96360, replace = False, random_state = 1) # Randomly sample 32,000 pathogenic snSNP data points
+print("Done Random Sampling")
+
+"""
+# Use histograms to see how often occurences of data points occur, which may be different for different classes
+# From looking at the differences in occurrences of data points for the two classes, we can visually see (not just via chi-squared), how much our features matter in the classification
+def histogram_comparison(column_of_choice):
+    hist_fig, hist_axes = plt.subplots(nrows = 1, ncols = 2, sharex = "all", sharey = "all")
+    random_benign_frame.hist(column = column_of_choice, ax = hist_axes[0], density = True)
+    random_pathogenic_frame.hist(column = column_of_choice, ax = hist_axes[1], density = True)
+    hist_axes[0].set_title("Benign Data (%s)" % column_of_choice)
+    hist_axes[1].set_title("Pathogenic Data (%s)" % column_of_choice)
+    plt.show()
+
+histogram_comparison("aa_vals")
+histogram_comparison("hydro_val_change")
+# Can use this one-line code function to look at other properties' differences amongst the two classes, simply change out the column_of_choice analyzed
+# Analyzing all columns at the same time generate graphs that are too small to be able to accurately and precisely analyze
+"""
 
 concat_dataframe = pd.concat([random_benign_frame, random_pathogenic_frame], ignore_index = True) # Concatenate the two dataframes into a 64,000 point dataframe
 
 final_dataframe = concat_dataframe.sample(frac = 1) # Shuffle the points amongst the dataframe randomly to prevent biased training
+print("Done Generating Final Dataframe")
+
+# If more neighboring amino acids were considered, we risk losing the possibility of evaluating too many future cases/possibilities?
+
 
 #find_nan_df = final_dataframe[final_dataframe.isnull().any(axis = 1)] # Used to find any NaN values which mess up logreg
 #print(find_nan_df.shape) # shows that no NaN values are present
@@ -229,7 +259,9 @@ final_x = final_dataframe[["aa_vals", "hydro_val_change", "mw_val_change", "char
                            "r_aa_vals", "r_hydro_val_diff_change", "r_mw_val_diff_change", "r_charge_val_diff_change", "r_pi_val_diff_change", "r_pro_pres",
                            "o_aa_vals", "prim_seq_length"]].to_numpy().round(2)
 
+print("Workable Data Available")
 print(final_x.shape)
+
 
 #print(final_y.shape, final_x.shape) # Check if dimensions of input matrices and label array match
 
@@ -246,10 +278,12 @@ def cv_shuffle_split(cv_type, final_y, final_x): # Create a cross-validation fun
 sss = StratifiedShuffleSplit(test_size = 0.335, train_size = 0.665) # Set stratified shuffle split cross-validation test data split parameters, 34% testing and 66% training, default 10 iterations of testing
 
 cv_sss_train, cv_sss_test = cv_shuffle_split(sss, final_y, final_x) # Use the cross-validation stratified shuffle split function on the y and x numpy arrays/matrices to generate indices for the data, 10 arrays of indices for training, 10 arrays of indicies for testing
+print("Done Making Stratified Shuffle Split Indices")
 
 skf = StratifiedKFold(n_splits = 20) # Set stratified k fold settings, where there will be 20 specific folds that represent ~50% of the data in each fold, default 20 iterations of testing
 
 cv_skf_train, cv_skf_test = cv_shuffle_split(skf, final_y, final_x) # Use the cross-validation stratified K-fold split function on the y and x numpy arrays/matrices to generate indices for the data, 20 arrays of indices for training, 20 arrays of indicies for testing
+print("Done Making Stratified K-Fold Indices")
 
 """
 # Use Feature Selection after creating CV indices
@@ -304,8 +338,10 @@ def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, fina
     return(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle)
     
 tn_sss, fp_sss, fn_sss, tp_sss = perform_log_reg(cv_sss_train, cv_sss_test, cv_sss_feat_indices, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+print("Completed Stratified Shuffle Split Logistic Regression Classification")
 
 tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_skf_train, cv_skf_test, cv_skf_feat_indices, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+print("Completed Stratified K-Fold Logistic Regression Classification")
 
 def convert_conf_matrix_to_numpy(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle):
     print("Converting Results to Numpy Arrays")
@@ -360,14 +396,17 @@ def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features
     return (tn_shuffle_rf, fp_shuffle_rf, fn_shuffle_rf, tp_shuffle_rf)
 
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_sss_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+print("Completed Stratified Shuffle Split Random Forest Classification")
 
 tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_skf_train, cv_skf_test, cv_skf_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
+print("Completed Stratified K-Fold Random Forest Classification")
 
 acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
 
 # Cannot do SVM since too many data points
+print("Plotting Metrics")
 
 plt.subplot(221)
 labels = ["LR Sratified\nShuffle Split", "RF Sratified\nShuffle Split", "LR Sratified\nK-Fold", "RF Sratified\nK-Fold"]
