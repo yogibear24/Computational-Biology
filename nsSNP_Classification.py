@@ -318,7 +318,6 @@ cv_sss_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16
 cv_skf_feat_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17, 18, 19] # Model performs better without feature selction so will simply just implement this
 
 def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y, final_x): # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
-    print("Performing Logistic Regression Classification")
     logreg = LogisticRegression(penalty = "l2", solver = "liblinear")  # Set the logistic regression to have te L1 (least-squares regularization) penalty (due to having built-in feature selection) and liblinear solver (standard and can be used with L1)
     tn_shuffle = [] # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
     fp_shuffle = [] # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
@@ -334,10 +333,12 @@ def perform_log_reg(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, fina
         fn_shuffle.append(fn) # Update the amount of false negatives for each testing iteration, resulting in a list of false negative amounts for each iteration
         tp_shuffle.append(tp) # Update the amount of true positives for each testing iteration, resulting in a list of true positive amounts for each iteration
     return(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle)
-    
+
+print("Performing Stratified Shuffle Split Logistic Regression Classification")
 tn_sss, fp_sss, fn_sss, tp_sss = perform_log_reg(cv_sss_train, cv_sss_test, cv_sss_feat_indices, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 print("Completed Stratified Shuffle Split Logistic Regression Classification")
 
+print("Performing Stratified K-Fold Logistic Regression Classification")
 tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_skf_train, cv_skf_test, cv_skf_feat_indices, final_y, final_x) # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 print("Completed Stratified K-Fold Logistic Regression Classification")
 
@@ -375,7 +376,6 @@ acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, 
 from sklearn.ensemble import RandomForestClassifier
 
 def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
-    print("Performing Random Forest Classification")
     rfclf = RandomForestClassifier(n_estimators = 100)
     tn_shuffle_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
     fp_shuffle_rf = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
@@ -393,12 +393,15 @@ def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features
     tn_shuffle_rf, fp_shuffle_rf, fn_shuffle_rf, tp_shuffle_rf = convert_conf_matrix_to_numpy(tn_shuffle_rf, fp_shuffle_rf, fn_shuffle_rf, tp_shuffle_rf)
     return (tn_shuffle_rf, fp_shuffle_rf, fn_shuffle_rf, tp_shuffle_rf)
 
+print("Performing Stratified Shuffle Split Random Forest Classification")
 tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf = perform_random_forest(cv_sss_train, cv_sss_test, cv_sss_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 print("Completed Stratified Shuffle Split Random Forest Classification")
 
+print("Performing Stratified K-Fold Random Forest Classification")
 tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf = perform_random_forest(cv_skf_train, cv_skf_test, cv_skf_feat_indices, final_y, final_x)  # Generate lists for true negatives, false positives, false negatives, and true positives for each iteration for each type of cross-validation
 print("Completed Stratified K-Fold Random Forest Classification")
 
+print("Calculating Metrics")
 acc_sss_rf, acc_sss_std_rf, prec_sss_rf, prec_sss_std_rf, sens_sss_rf, sens_sss_std_rf, spec_sss_rf, spec_sss_std_rf = calculate_acc_prec_sens_spec(tn_sss_rf, fp_sss_rf, fn_sss_rf, tp_sss_rf)
 
 acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_std_rf, spec_skf_rf, spec_skf_std_rf = calculate_acc_prec_sens_spec(tn_skf_rf, fp_skf_rf, fn_skf_rf, tp_skf_rf)
@@ -406,41 +409,36 @@ acc_skf_rf, acc_skf_std_rf, prec_skf_rf, prec_skf_std_rf, sens_skf_rf, sens_skf_
 # Cannot do SVM since too many data points
 print("Plotting Metrics")
 
-plt.subplot(221)
+def plot_aesthetic_parameters():
+    plt.tight_layout(pad=0.4)
+    plt.tick_params(axis="x", labelsize=8, rotation=-45, pad=0.4)
+    plt.tick_params(axis="y", labelsize=8, pad=0.4)
+    plt.xlabel("Model Cross-Validation Type", fontsize=8)
+
 labels = ["LR Sratified\nShuffle Split", "RF Sratified\nShuffle Split", "LR Sratified\nK-Fold", "RF Sratified\nK-Fold"]
-plt.tight_layout(pad = 0.4)
+
+plt.subplot(221)
+plot_aesthetic_parameters()
 plt.title("Accuracy of Logistic Regression (LR)\nand Random Forest(RF) Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
-plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
-plt.ylabel("Model Accuracy", fontsize = 8)
-plt.xlabel("Model Cross-Validation Type", fontsize = 8)
+plt.ylabel("Model Accuracy", fontsize=8)
 plt.errorbar(labels, np.array([acc_sss, acc_sss_rf, acc_skf, acc_skf_rf]), np.array([acc_sss_std, acc_sss_std_rf, acc_skf_std, acc_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(222)
-plt.tight_layout(pad = 0.4)
+plot_aesthetic_parameters()
 plt.title("Precision of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
-plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
 plt.ylabel("Model Precision", fontsize = 8)
-plt.xlabel("Model Cross-Validation Type", fontsize = 8)
 plt.errorbar(labels, np.array([prec_sss, prec_sss_rf, prec_skf, prec_skf_rf]), np.array([prec_sss_std, prec_sss_std_rf, prec_skf_std, prec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(223)
-plt.tight_layout(pad = 0.4)
+plot_aesthetic_parameters()
 plt.title("Sensitivity of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
-plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
-plt.ylabel("Sensitivity", fontsize = 8)
-plt.xlabel("Model Cross-Validation Type", fontsize = 8)
+plt.ylabel("Model Sensitivity", fontsize = 8)
 plt.errorbar(labels, np.array([sens_sss, sens_sss_rf, sens_skf, sens_skf_rf]), np.array([sens_sss_std, sens_sss_std_rf, sens_skf_std, sens_skf_std_rf]), linestyle='None', marker='^')
 
 plt.subplot(224)
-plt.tight_layout(pad = 0.4)
+plot_aesthetic_parameters()
 plt.title("Specificity of Logistic Regression (LR)\nand Random Forest (RF) Models", fontsize = 10)
-plt.tick_params(axis = "x", labelsize = 8, rotation = -45, pad = 0.4)
-plt.tick_params(axis = "y", labelsize = 8, pad = 0.4)
-plt.ylabel("Specificity", fontsize = 8)
-plt.xlabel("Model Cross-Validation Type", fontsize = 8)
+plt.ylabel("Model Specificity", fontsize = 8)
 plt.errorbar(labels, np.array([spec_sss, spec_sss_rf, spec_skf, spec_skf_rf]), np.array([spec_sss_std, spec_sss_std_rf, spec_skf_std, spec_skf_std_rf]), linestyle='None', marker='^')
 
 plt.show()
