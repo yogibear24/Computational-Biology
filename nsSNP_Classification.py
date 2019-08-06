@@ -343,13 +343,13 @@ tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_skf_train, cv_skf_test, cv_s
 print("Completed Stratified K-Fold Logistic Regression Classification")
 
 def convert_conf_matrix_to_numpy(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle):
+    print("Converting Results to Numpy Arrays")
     tn_shuffle = np.asarray(tn_shuffle) # Turn the list of true negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     fp_shuffle = np.asarray(fp_shuffle) # Turn the list of false positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     fn_shuffle = np.asarray(fn_shuffle) # Turn the list of false negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     tp_shuffle = np.asarray(tp_shuffle) # Turn the list of true positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     return(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle)
 
-print("Converting Results to Numpy Arrays")
 tn_sss, fp_sss, fn_sss, tp_sss = convert_conf_matrix_to_numpy(tn_sss, fp_sss, fn_sss, tp_sss)
 
 tn_skf, fp_skf, fn_skf, tp_skf = convert_conf_matrix_to_numpy(tn_skf, fp_skf, fn_skf, tp_skf)
