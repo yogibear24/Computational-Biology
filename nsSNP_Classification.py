@@ -1,8 +1,8 @@
-# This project is to create a logistic regression classifier based on dbSNP data from the National Center of Biomedical Information (NCBI) and NCBI's Protein database.
-# This classifier can identify whether a Single Nucleotide Polymorphism(SNP) is pathogenic (harmful) or benign (unaffective).
-# Different features are utilized from the data such as....
+# This project is to create a logistic regression classifier based on dbSNP (Database for Single Nucleotide Polymorphisms) data from the National Center of Biomedical Information (NCBI) as well as NCBI's Protein database.
+# This classifier can identify whether a Non-Synonymous Single Nucleotide Polymorphism(nsSNP) is pathogenic (disease-related) or benign (non-disease) based on only primary sequence data.
+# Different features are utilized from the data such as the amino acid that is mutated in the final protein product as a result of an nsSNP.
 
-# Import modules, packages and libraries used (numpy, matplotlib, pandas dataframe, mathematics, scikit-learn cross-validation - stratified shuffle split, stratified cross-fold), scikit-learn logistic regression and confusion matrix, scipy integration
+# Import modules used (numpy, matplotlib, pandas dataframe, scikit-learn stratified shuffle split and stratified k-fold cross-validation, scikit-learn logistic regression and random forest models, and scikit-learn confusion matrix
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -10,11 +10,10 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
-from textwrap import wrap
+from sklearn.ensemble import RandomForestClassifier
 
 # parse dbSNP .txt data (or specific nucleotide position changes) into lists for later usage, specifically gene id, gene abbreviation, gene class, gene residue identification, amino acid change position, protein accession number
 def mutation_data_parser(original_file, new_file):
-    #print("Start Data Extraction")
     with open(original_file,"r") as stuff_to_write: # Open the original file as read oly
         with open(new_file,"w") as stuff_written: # Create a new data file with extracted lines from original file to preserve original file data integrity
             for line in stuff_to_write:
@@ -39,10 +38,8 @@ def mutation_data_parser(original_file, new_file):
     return(sample_snp_id, sample_gene_abbrev, sample_fxn_class, sample_residue, sample_aa_position, sample_protein_acc) # Return information in tuple of lists to be used later on
 
 print("Parsing nsSNP Data")
-sample_benign_snp_id, sample_benign_gene_abbrev, sample_benign_fxn_class, sample_benign_residue, sample_benign_aa_position, sample_benign_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_benign.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_benign_new.txt")
-sample_pathogenic_snp_id, sample_pathogenic_gene_abbrev, sample_pathogenic_fxn_class, sample_pathogenic_residue, sample_pathogenic_aa_position, sample_pathogenic_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_pathogenic.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/sample_pathogenic_new.txt")
-benign_snp_id, benign_gene_abbrev, benign_fxn_class, benign_residue, benign_aa_position, benign_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/Benign_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/New_Benign_nsSNP_Protein_Available.txt")
-pathogenic_snp_id, pathogenic_gene_abbrev, pathogenic_fxn_class, pathogenic_residue, pathogenic_aa_position, pathogenic_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/CSE527/Project/Final_Report/Pathogenic_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/CSE527/Project/Final_Report/New_Pathogenic_nsSNP_Protein_Available.txt")
+benign_snp_id, benign_gene_abbrev, benign_fxn_class, benign_residue, benign_aa_position, benign_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/Projects/nsSNP_Classification/Benign_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/Projects/nsSNP_Classification/New_Benign_nsSNP_Protein_Available.txt")
+pathogenic_snp_id, pathogenic_gene_abbrev, pathogenic_fxn_class, pathogenic_residue, pathogenic_aa_position, pathogenic_protein_acc = mutation_data_parser("C:/Users/Everet/Documents/Projects/nsSNP_Classification/Pathogenic_nsSNP_Protein_Available.txt", "C:/Users/Everet/Documents/Projects/nsSNP_Classification/New_Pathogenic_nsSNP_Protein_Available.txt")
 
 def appending_snp_id(snp_id, gene_abbrev): # Creating a new appended SNP id list, where the format is [SNP id 0, gene abbreviation 0, SNP id 1, gene abbreviation 1, ...]
     #print("Appending SNP ID Data")
@@ -58,8 +55,6 @@ def appending_snp_id(snp_id, gene_abbrev): # Creating a new appended SNP id list
     return(new_snp_id)
 
 print("Appending SNP ID")
-new_sample_benign_id = appending_snp_id(sample_benign_snp_id, sample_benign_gene_abbrev)
-new_sample_pathogenic_id = appending_snp_id(sample_pathogenic_snp_id, sample_pathogenic_gene_abbrev)
 new_pathogenic_id = appending_snp_id(pathogenic_snp_id, pathogenic_gene_abbrev)
 new_benign_id = appending_snp_id(benign_snp_id, benign_gene_abbrev)
 
@@ -83,7 +78,7 @@ def parse_all_proteins(): # This function utilizes fasta data with protein acces
     sequences = {} # Initialize a blank dictionary
     in_sequence = False # Initialize a state machine that turns on ("true") later when a new FASTA protein sequence entry is being read
     current_sequence_name = "" # Initialize a blank key string name (eventually will be a protein accession number)
-    with open("C:/Users/Everet/Documents/CSE527/Project/Final_Report/All_Proteins.fasta","r") as sample_fasta: # Open the all proteins FASTA file as read-only
+    with open("C:/Users/Everet/Documents/Projects/nsSNP_Classification/All_Proteins.fasta","r") as sample_fasta: # Open the all proteins FASTA file as read-only
         for line in sample_fasta.readlines():
             if line[0] == '>': # If the line in the FASTA file starts with a '>', the state machine turns on, extract the desired protein accession number as the current_sequence_name, and create a blank list of strings (sequences) for the protein accession number key
                 in_sequence = True
@@ -114,8 +109,6 @@ def create_dataframe(sample_snp_id, sample_protein_acc, sample_gene_abbrev, samp
     return(sample_dataframe)
 
 print("Initializing Dataframes")
-sample_benign_dataframe = create_dataframe(new_sample_benign_id, sample_benign_protein_acc, sample_benign_gene_abbrev, sample_benign_fxn_class, sample_benign_residue, sample_benign_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
-sample_pathogenic_dataframe = create_dataframe(new_sample_pathogenic_id, sample_pathogenic_protein_acc, sample_pathogenic_gene_abbrev, sample_pathogenic_fxn_class, sample_pathogenic_residue, sample_pathogenic_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
 benign_dataframe = create_dataframe(new_benign_id, benign_protein_acc, benign_gene_abbrev, benign_fxn_class, benign_residue, benign_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
 pathogenic_dataframe = create_dataframe(new_pathogenic_id, pathogenic_protein_acc, pathogenic_gene_abbrev, pathogenic_fxn_class, pathogenic_residue, pathogenic_aa_position, sequence_dict, hydro_dict, mm_dict, cv_dict, pro_dict)
 
@@ -131,8 +124,6 @@ def dropping_rows(sample_dataframe): # Retain desired based on different conditi
     return(filtered_data)
 
 print("Cleaning Data")
-new_sample_benign_dataframe = dropping_rows(sample_benign_dataframe) # Apply dropping row function to sample benign snSNP data (testing out function before applying to mass data)
-new_sample_pathogenic_dataframe = dropping_rows(sample_pathogenic_dataframe) # Apply dropping row function to sample pathogenic snSNP data (testing out function before applying to mass data)
 new_benign_dataframe = dropping_rows(benign_dataframe) # Apply dropping row function to full benign snSNP dataset
 new_pathogenic_dataframe = dropping_rows(pathogenic_dataframe) # Apply dropping row function to full pathogenic snSNP dataset
 
@@ -169,16 +160,10 @@ def generate_ref_neighbors(sample_dataframe, hydro_dict, mm_dict, cv_dict, pro_d
     return(sample_dataframe)
 
 print("Generating Amino Acid Neighbor Data")
-complete_sample_benign_dataframe = generate_ref_neighbors(new_sample_benign_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
-complete_sample_pathogenic_dataframe = generate_ref_neighbors(new_sample_pathogenic_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 complete_benign_dataframe = generate_ref_neighbors(new_benign_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 complete_pathogenic_dataframe = generate_ref_neighbors(new_pathogenic_dataframe, hydro_dict, mm_dict, cv_dict, pro_dict)
 
 print("Generating Labels")
-sample_benign_labels = ["0"] * len(complete_sample_benign_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample benign dataframe, specifically 0 = benign, 1 = pathogenic
-sample_pathogenic_labels = ["1"] * len(complete_sample_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the sample pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
-complete_sample_benign_dataframe.insert(0, "label", sample_benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
-complete_sample_pathogenic_dataframe.insert(0, "label", sample_pathogenic_labels) # Add a column to the dataframe for pathogenic snSNP's which all consist of 1
 benign_labels = ["0"] * len(complete_benign_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the complete benign dataframe, specifically 0 = benign, 1 = pathogenic
 pathogenic_labels = ["1"] * len(complete_pathogenic_dataframe["class"]) # Create binary labels for benign and pathogenic snSNP's for the complete pathogenic dataframe, specifically 0 = benign, 1 = pathogenic
 complete_benign_dataframe.insert(0, "label", benign_labels) # Add a column to the dataframe for benign snSNP's which all consist of 0
@@ -371,9 +356,6 @@ acc_sss, acc_sss_std, prec_sss, prec_sss_std, sens_sss, sens_sss_std, spec_sss, 
 acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, spec_skf_std = calculate_acc_prec_sens_spec(tn_skf, fp_skf, fn_skf, tp_skf)
 
 
-# Trying out Random Forest Classifier now NEED TO CHANGE COMMENTS
-
-from sklearn.ensemble import RandomForestClassifier
 
 def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
     rfclf = RandomForestClassifier(n_estimators = 100)
