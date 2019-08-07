@@ -58,7 +58,7 @@ print("Appending SNP ID")
 new_pathogenic_id = appending_snp_id(pathogenic_snp_id, pathogenic_gene_abbrev)
 new_benign_id = appending_snp_id(benign_snp_id, benign_gene_abbrev)
 
-print("Creating Dictionaries")
+print("Creating Amino Acid Feature Dictionaries")
 amino_acids = ["G","A","V","L","I","P","F","Y","W","S","T","N","Q","C","M","D","E","H","K","R"] # Generate list of twenty possible amino acids in protein sequences where the SNP's occur
 amino_acid_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] # Generate numeric label for the twenty possible amino acids in protein sequences where the SNP's occur, to also do a Bag-of-Words approach
 hydrophobic_values = [0.67, 1.0, 2.3, 2.2, 3.1, -0.29, 2.5, 0.08, 1.5, -1.1, -0.75, -2.7, -2.9, 0.17, 1.1, -3.0, -2.6, -1.7, -4.6, -7.5] # Generate list of hydrophobicity values for each amino acid
@@ -186,7 +186,7 @@ def calculate_differences(sample_dataframe): # Create data that measures magnitu
     sample_dataframe["r_pi_val_diff_change"] = ((sample_dataframe["pi_vals"] - sample_dataframe["r_pi_vals"]) - (sample_dataframe["o_pi_vals"] - sample_dataframe["r_pi_vals"])).abs() # Calculate the magnitude of the pI value change between right neighbor and new substitute, and right neighbor and original amino acid at the substituted position
     return(sample_dataframe)
 
-print("Calculating Values")
+print("Calculating Neighbor Difference Values")
 benign_calculations = calculate_differences(complete_benign_dataframe)
 pathogenic_calculations = calculate_differences(complete_pathogenic_dataframe)
 
@@ -328,7 +328,6 @@ tn_skf, fp_skf, fn_skf, tp_skf = perform_log_reg(cv_skf_train, cv_skf_test, cv_s
 print("Completed Stratified K-Fold Logistic Regression Classification")
 
 def convert_conf_matrix_to_numpy(tn_shuffle, fp_shuffle, fn_shuffle, tp_shuffle):
-    print("Converting Results to Numpy Arrays")
     tn_shuffle = np.asarray(tn_shuffle) # Turn the list of true negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     fp_shuffle = np.asarray(fp_shuffle) # Turn the list of false positive amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
     fn_shuffle = np.asarray(fn_shuffle) # Turn the list of false negative amounts for the 10 iterations of stratified shuffle split into a numpy array for faster processing/calculations
@@ -357,14 +356,14 @@ acc_skf, acc_skf_std, prec_skf, prec_skf_std, sens_skf, sens_skf_std, spec_skf, 
 
 
 
-def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y,final_x):  # Perform logistic regression on the y and x numpy arrays/matrices using the different cross-validation indices
+def perform_random_forest(cv_shuffle_train, cv_shuffle_test, cv_shuffle_features, final_y,final_x):  # Perform random forest on the y and x numpy arrays/matrices using the different cross-validation indices
     rfclf = RandomForestClassifier(n_estimators = 100)
-    tn_shuffle_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the logistic regression
-    fp_shuffle_rf = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the logistic regression
-    fn_shuffle_rf = []  # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the logistic regression
-    tp_shuffle_rf = []  # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the logistic regression
+    tn_shuffle_rf = []  # Initialize an empty list for the true negative results when performing stratified shuffle split cross-validation with the random forest
+    fp_shuffle_rf = []  # Initialize an empty list for the false positive results when performing stratified shuffle split cross-validation with the random forest
+    fn_shuffle_rf = []  # Initialize an empty list for the false negative results when performing stratified shuffle split cross-validation with the random forest
+    tp_shuffle_rf = []  # Initialize an empty list for the true positive results when performing stratified shuffle split cross-validation with the random forest
     for shuffle_iter in range(0, len(cv_shuffle_train)):  # Iterate amongst the total amount of index arrays for the stratified shuffle split list of index arrays
-        rfclf.fit(final_x[np.ix_(cv_shuffle_train[shuffle_iter], cv_shuffle_features)], final_y[cv_shuffle_train[shuffle_iter]].ravel())  # Fit the logistic regression model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
+        rfclf.fit(final_x[np.ix_(cv_shuffle_train[shuffle_iter], cv_shuffle_features)], final_y[cv_shuffle_train[shuffle_iter]].ravel())  # Fit the random forest model to the training data, for each individual stratified shuffle split index array, .ravel() is used to flatten the arrays to be compatible
         y_pred = rfclf.predict(final_x[np.ix_(cv_shuffle_test[shuffle_iter], cv_shuffle_features)])  # Predict classification of the test data, for each individual stratified shuffle split index array
         y_true = final_y[cv_shuffle_test[shuffle_iter]]  # Generate the true classification of the test data, for each individual stratified shuffle split index array
         tn_rf, fp_rf, fn_rf, tp_rf = confusion_matrix(y_true, y_pred).ravel()  # Use the confusion matrix function with the current binary (0 or 1) classification predicted and true values, along with .ravel to generate the amount of true negative, false positive, false negative, and true positive results for each testing iteration
