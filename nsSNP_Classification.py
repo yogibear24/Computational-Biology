@@ -1,4 +1,4 @@
-# This project is to create a logistic regression classifier based on dbSNP (Database for Single Nucleotide Polymorphisms) data from the National Center of Biomedical Information (NCBI) as well as NCBI's Protein database.
+# This project is to create a classifier based on dbSNP (Database for Single Nucleotide Polymorphisms) data from the National Center of Biomedical Information (NCBI) as well as NCBI's Protein database.
 # This classifier can identify whether a Non-Synonymous Single Nucleotide Polymorphism(nsSNP) is pathogenic (disease-related) or benign (non-disease) based on only primary sequence data.
 # Different features are utilized from the data such as the amino acid that is mutated in the final protein product as a result of an nsSNP.
 
